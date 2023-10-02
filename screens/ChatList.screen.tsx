@@ -9,7 +9,7 @@ type ChatListPropsTypes = {
 const ChatList: FC<ChatListPropsTypes> = ({ navigation }) => {
   return (
     <View>
-      <Text style={{ color: "red" }} onPress={() => navigation.navigate('ChatSettings')}>ChatList</Text>
+      <Text style={{ color: "red" }} onPress={() => navigation.navigate('Chat')}>Chat</Text>
     </View>
   );
 };

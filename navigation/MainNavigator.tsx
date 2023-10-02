@@ -1,7 +1,7 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { ChatList, ChatSettings, Settings } from "../screens";
+import { Chat, ChatList, ChatSettings, Settings } from "../screens";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -45,6 +45,14 @@ const MainNavigator = () => (
       component={ChatSettings}
       options={{
         headerTitle: "Chat Settings",
+        headerBackTitle: "Back",
+      }}
+    />
+    <Stack.Screen
+      name="Chat"
+      component={Chat}
+      options={{
+        headerTitle: "",
         headerBackTitle: "Back",
       }}
     />
