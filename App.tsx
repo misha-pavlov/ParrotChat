@@ -4,9 +4,33 @@ import * as Font from "expo-font";
 import { useCallback, useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import AppNavigator from "./navigation/AppNavigator";
+import { NativeBaseProvider, extendTheme } from "native-base";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
+
+const theme = extendTheme({
+  fontConfig: {
+    Quicksand: {
+      400: {
+        normal: "Quicksand-Regular",
+      },
+      500: {
+        normal: "Quicksand-Medium",
+      },
+      700: {
+        normal: "Quicksand-Bold",
+      },
+    },
+  },
+
+  // Make sure values below matches any of the keys in `fontConfig`
+  fonts: {
+    heading: "Quicksand",
+    body: "Quicksand",
+    mono: "Quicksand",
+  },
+});
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -50,8 +74,10 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider onLayout={onLayoutRootView}>
-      <AppNavigator />
-    </SafeAreaProvider>
+    <NativeBaseProvider>
+      <SafeAreaProvider onLayout={onLayoutRootView}>
+        <AppNavigator />
+      </SafeAreaProvider>
+    </NativeBaseProvider>
   );
 }
