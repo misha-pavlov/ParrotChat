@@ -1,8 +1,12 @@
 import { Input, Text, View } from "native-base";
 import { FC } from "react";
+import { KeyboardTypeOptions } from "react-native";
 import { colors } from "../config/colors";
 
 type LoginInputPropsTypes = {
+  inputId: string;
+  onChange: (inputId: string, inputValue: string) => void;
+
   label?: string;
   icon?: {
     pack: any;
@@ -10,10 +14,23 @@ type LoginInputPropsTypes = {
     color: string;
     name: string;
   };
-  errorText?: string;
+  // boolean just for type match
+  errorText?: [string] | boolean;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters" | undefined;
+  secureTextEntry?: boolean;
+  keyboardType?: KeyboardTypeOptions;
 };
 
-const LoginInput: FC<LoginInputPropsTypes> = ({ label, icon, errorText }) => (
+const LoginInput: FC<LoginInputPropsTypes> = ({
+  label,
+  icon,
+  errorText,
+  onChange,
+  inputId,
+  autoCapitalize,
+  secureTextEntry,
+  keyboardType,
+}) => (
   <>
     {label && (
       <Text fontFamily="Quicksand-Bold" paddingY={2} color={colors.textColor}>
@@ -40,11 +57,15 @@ const LoginInput: FC<LoginInputPropsTypes> = ({ label, icon, errorText }) => (
       }
       color={colors.textColor}
       fontFamily="Quicksand-Regular"
+      onChangeText={(value) => onChange(inputId, value)}
+      autoCapitalize={autoCapitalize}
+      secureTextEntry={secureTextEntry}
+      keyboardType={keyboardType}
     />
     {errorText && (
       <View marginY="5px">
         <Text color={colors.red} fontSize={13}>
-          {errorText}
+          {Array.isArray(errorText) && errorText.length && errorText[0]}
         </Text>
       </View>
     )}
