@@ -4,10 +4,16 @@ type State = typeof INITIAL_SIGN_UP_FORM_STATE;
 type ActionType = {
   validationResult: undefined | Array<string>;
   inputId: string;
+  inputValue: string;
 };
 
 export const loginFormReducer = (state: State, action: ActionType): State => {
-  const { validationResult, inputId } = action;
+  const { validationResult, inputId, inputValue } = action;
+
+  const updatedValues = {
+    ...state.inputValues,
+    [inputId]: inputValue,
+  };
 
   const updatedValidities = {
     ...state.inputValidities,
@@ -24,6 +30,7 @@ export const loginFormReducer = (state: State, action: ActionType): State => {
   }
 
   return {
+    inputValues: updatedValues,
     inputValidities: updatedValidities,
     formIsValid: updatedFormIsValid,
   };

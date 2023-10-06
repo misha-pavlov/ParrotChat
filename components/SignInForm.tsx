@@ -18,7 +18,7 @@ const SignInForm = () => {
   const onChange = useCallback(
     (inputId: string, inputValue: string) => {
       const validationResult = loginValidation(inputId, inputValue);
-      dispatchFormState({ inputId, validationResult });
+      dispatchFormState({ inputId, validationResult, inputValue });
     },
     [dispatchFormState]
   );

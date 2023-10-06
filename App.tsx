@@ -3,8 +3,11 @@ import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
 import { useCallback, useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import AppNavigator from "./navigation/AppNavigator";
 import { NativeBaseProvider, extendTheme } from "native-base";
+import { LogBox } from "react-native";
+import AppNavigator from "./navigation/AppNavigator";
+
+LogBox.ignoreLogs(["AsyncStorage has been extracted"]);
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
