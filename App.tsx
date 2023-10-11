@@ -5,7 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NativeBaseProvider, extendTheme } from "native-base";
 import { LogBox } from "react-native";
+import { Provider } from "react-redux";
 import AppNavigator from "./navigation/AppNavigator";
+import { store } from "./store/store";
 
 LogBox.ignoreLogs(["AsyncStorage has been extracted"]);
 
@@ -77,10 +79,12 @@ export default function App() {
   }
 
   return (
-    <NativeBaseProvider>
-      <SafeAreaProvider onLayout={onLayoutRootView}>
-        <AppNavigator />
-      </SafeAreaProvider>
-    </NativeBaseProvider>
+    <Provider store={store}>
+      <NativeBaseProvider>
+        <SafeAreaProvider onLayout={onLayoutRootView}>
+          <AppNavigator />
+        </SafeAreaProvider>
+      </NativeBaseProvider>
+    </Provider>
   );
 }
