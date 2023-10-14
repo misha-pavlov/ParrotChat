@@ -1,16 +1,23 @@
 import { Feather } from "@expo/vector-icons";
-import { Button } from "native-base";
-import { useCallback, useReducer } from "react";
+import { Button, View } from "native-base";
+import { useCallback, useEffect, useReducer, useState } from "react";
+import { ActivityIndicator, Alert } from "react-native";
 import LoginInput from "./LoginInput";
 import { colors } from "../config/colors";
 import { loginValidation } from "../utils/validation";
 import {
   LOGIN_IDS as IDS,
   INITIAL_SIGN_IN_FORM_STATE,
+  LOGIN_IDS,
 } from "../config/constants";
 import { loginFormReducer } from "../utils/reducers/loginFormReducer";
+import { useAppDispatch } from "../store/store";
+import { signIn } from "../utils/actions/authActions";
 
 const SignInForm = () => {
+  const dispatch = useAppDispatch();
+  const [error, setError] = useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
   const [formState, dispatchFormState] = useReducer(
     loginFormReducer,
     INITIAL_SIGN_IN_FORM_STATE
@@ -22,6 +29,28 @@ const SignInForm = () => {
     },
     [dispatchFormState]
   );
+
+  const authHandler = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(undefined);
+      await dispatch(
+        signIn(
+          formState.inputValues as Pick<typeof LOGIN_IDS, "email" | "password">
+        )
+      );
+    } catch (error) {
+      setError((error as { message: string }).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [formState.inputValues]);
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert("Error", error);
+    }
+  }, [error]);
 
   return (
     <>
@@ -55,15 +84,22 @@ const SignInForm = () => {
         errorText={formState.inputValidities[IDS.password]}
       />
 
-      <Button
-        backgroundColor={colors.primaryGreen}
-        borderRadius={30}
-        _pressed={{ opacity: 0.5 }}
-        mt="20px"
-        isDisabled={!formState.formIsValid}
-      >
-        Sign in
-      </Button>
+      {isLoading ? (
+        <View mt="20px">
+          <ActivityIndicator color={colors.primaryGreen} />
+        </View>
+      ) : (
+        <Button
+          backgroundColor={colors.primaryGreen}
+          borderRadius={30}
+          _pressed={{ opacity: 0.5 }}
+          mt="20px"
+          isDisabled={!formState.formIsValid}
+          onPress={authHandler}
+        >
+          Sign in
+        </Button>
+      )}
     </>
   );
 };
