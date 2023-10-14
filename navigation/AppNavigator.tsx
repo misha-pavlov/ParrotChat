@@ -1,14 +1,19 @@
 import { NavigationContainer } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 import MainNavigator from "./MainNavigator";
 import { Auth } from "../screens";
+import { RootState } from "../store/store";
 
 const AppNavigator = () => {
-  const isAuth = false;
+  const isAuth = useSelector((state: RootState) => {
+    const token = state.auth.token;
+    return token !== null && token !== "";
+  });
 
   return (
-      <NavigationContainer>
-        {isAuth ? <MainNavigator /> : <Auth />}
-      </NavigationContainer>
+    <NavigationContainer>
+      {isAuth ? <MainNavigator /> : <Auth />}
+    </NavigationContainer>
   );
 };
 

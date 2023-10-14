@@ -14,9 +14,10 @@ import {
 import { loginValidation } from "../utils/validation";
 import { loginFormReducer } from "../utils/reducers/loginFormReducer";
 import { signUp } from "../utils/actions/authActions";
+import { useAppDispatch } from "../store/store";
 
 const SignUpForm = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
   const [formState, dispatchFormState] = useReducer(
@@ -34,11 +35,7 @@ const SignUpForm = () => {
   const authHandler = useCallback(async () => {
     try {
       setIsLoading(true);
-      dispatch(
-        signUp(
-          formState.inputValues as typeof LOGIN_IDS
-        ) as unknown as AnyAction
-      );
+      dispatch(signUp(formState.inputValues as typeof LOGIN_IDS));
       setError(undefined);
     } catch (error) {
       setError((error as { message: string }).message);
