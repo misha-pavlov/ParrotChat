@@ -1,7 +1,8 @@
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { child, getDatabase, ref, set } from "firebase/database";
 import { AnyAction } from "@reduxjs/toolkit";
-import { LOGIN_IDS } from "../../config/constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LOGIN_IDS, ASYNC_STORAGE_KEYS } from "../../config/constants";
 import { getFirebaseApp } from "../firebaseHelper";
 import { authenticate } from "../../store/authSlice";
 
@@ -19,8 +20,9 @@ export const signUp = (params: typeof LOGIN_IDS) => {
       );
       // @ts-ignore according type stsTokenManager doesn't exist, but acually it does
       const { uid, stsTokenManager } = result.user;
-      const { accessToken } = stsTokenManager;
+      const { accessToken, expirationTime } = stsTokenManager;
 
+      const expiryDate = new Date(expirationTime);
       const userData = await createUser({
         firstName,
         lastName,
@@ -29,6 +31,14 @@ export const signUp = (params: typeof LOGIN_IDS) => {
       });
 
       dispatch(authenticate({ token: accessToken, userData }));
+      AsyncStorage.setItem(
+        ASYNC_STORAGE_KEYS.userData,
+        JSON.stringify({
+          token: accessToken,
+          userId: uid,
+          expiryDate: expiryDate.toISOString(),
+        })
+      );
     } catch (error) {
       const errorCode = (error as { code: string }).code;
       let message = "Something went wrong";

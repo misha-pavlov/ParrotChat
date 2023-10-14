@@ -32,3 +32,7 @@ export const INITIAL_SIGN_IN_FORM_STATE = {
   },
   formIsValid: false,
 };
+
+export const ASYNC_STORAGE_KEYS = {
+  userData: "userData",
+};
