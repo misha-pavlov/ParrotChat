@@ -1,34 +1,45 @@
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { child, getDatabase, ref, set } from "firebase/database";
+import { AnyAction } from "@reduxjs/toolkit";
 import { LOGIN_IDS } from "../../config/constants";
 import { getFirebaseApp } from "../firebaseHelper";
+import { authenticate } from "../../store/authSlice";
 
-export const signUp = async (params: typeof LOGIN_IDS) => {
-  const { email, password, firstName, lastName } = params;
-  const app = getFirebaseApp();
-  const auth = getAuth(app);
+export const signUp = (params: typeof LOGIN_IDS) => {
+  return async (dispatch: (action: AnyAction) => AnyAction) => {
+    const { email, password, firstName, lastName } = params;
+    const app = getFirebaseApp();
+    const auth = getAuth(app);
 
-  try {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    const { uid } = result.user;
+    try {
+      const result = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      // @ts-ignore according type stsTokenManager doesn't exist, but acually it does
+      const { uid, stsTokenManager } = result.user;
+      const { accessToken } = stsTokenManager;
 
-    const userData = await createUser({
-      firstName,
-      lastName,
-      email,
-      userId: uid,
-    });
-    console.log("🚀 ~ file: authActions.ts:15 ~ signUp ~ userData:", userData);
-  } catch (error) {
-    const errorCode = (error as { code: string }).code;
-    let message = "Something went wrong";
+      const userData = await createUser({
+        firstName,
+        lastName,
+        email,
+        userId: uid,
+      });
 
-    if (errorCode === "auth/email-already-in-use") {
-      message = "This email is already in use";
+      dispatch(authenticate({ token: accessToken, userData }));
+    } catch (error) {
+      const errorCode = (error as { code: string }).code;
+      let message = "Something went wrong";
+
+      if (errorCode === "auth/email-already-in-use") {
+        message = "This email is already in use";
+      }
+
+      throw new Error(message);
     }
-
-    throw new Error(message);
-  }
+  };
 };
 
 type CreateUserParamsType = {

@@ -1,6 +1,9 @@
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { Button, View } from "native-base";
 import { useCallback, useEffect, useReducer, useState } from "react";
+import { ActivityIndicator, Alert } from "react-native";
+import { useDispatch } from "react-redux";
+import { AnyAction } from "@reduxjs/toolkit";
 import LoginInput from "./LoginInput";
 import { colors } from "../config/colors";
 import {
@@ -11,9 +14,9 @@ import {
 import { loginValidation } from "../utils/validation";
 import { loginFormReducer } from "../utils/reducers/loginFormReducer";
 import { signUp } from "../utils/actions/authActions";
-import { ActivityIndicator, Alert } from "react-native";
 
 const SignUpForm = () => {
+  const dispatch = useDispatch();
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
   const [formState, dispatchFormState] = useReducer(
@@ -31,7 +34,11 @@ const SignUpForm = () => {
   const authHandler = useCallback(async () => {
     try {
       setIsLoading(true);
-      await signUp(formState.inputValues as typeof LOGIN_IDS);
+      dispatch(
+        signUp(
+          formState.inputValues as typeof LOGIN_IDS
+        ) as unknown as AnyAction
+      );
       setError(undefined);
     } catch (error) {
       setError((error as { message: string }).message);
