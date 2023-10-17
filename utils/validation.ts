@@ -21,6 +21,14 @@ export const loginValidation = (inputId: string, inputValue: string) => {
     constrains.length = {
       minimum: 6,
     };
+  } else if (inputId === LOGIN_IDS.about) {
+    constrains.presence = {
+      allowEmpty: true,
+    };
+    constrains.length = {
+      minimum: 0,
+      maximum: 150,
+    };
   }
 
   const res = validate({ [inputId]: inputValue }, { [inputId]: constrains });
