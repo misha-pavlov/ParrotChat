@@ -19,6 +19,7 @@ type LoginInputPropsTypes = {
   autoCapitalize?: "none" | "sentences" | "words" | "characters" | undefined;
   secureTextEntry?: boolean;
   keyboardType?: KeyboardTypeOptions;
+  defaultValue?: string;
 };
 
 const LoginInput: FC<LoginInputPropsTypes> = ({
@@ -30,6 +31,7 @@ const LoginInput: FC<LoginInputPropsTypes> = ({
   autoCapitalize,
   secureTextEntry,
   keyboardType,
+  defaultValue,
 }) => (
   <>
     {label && (
@@ -58,6 +60,7 @@ const LoginInput: FC<LoginInputPropsTypes> = ({
       color={colors.textColor}
       fontFamily="Quicksand-Regular"
       onChangeText={(value) => onChange(inputId, value)}
+      defaultValue={defaultValue}
       autoCapitalize={autoCapitalize}
       secureTextEntry={secureTextEntry}
       keyboardType={keyboardType}

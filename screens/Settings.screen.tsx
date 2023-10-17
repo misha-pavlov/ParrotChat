@@ -1,13 +1,25 @@
 import { View } from "native-base";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useCallback, useReducer } from "react";
+import { useSelector } from "react-redux";
+import { ActivityIndicator } from "react-native";
 import { LoginInput, ScreenTitle } from "../components";
 import { colors } from "../config/colors";
 import { INITIAL_SETTINGS_FORM_STATE, LOGIN_IDS } from "../config/constants";
 import { loginValidation } from "../utils/validation";
 import { loginFormReducer } from "../utils/reducers/loginFormReducer";
+import { RootState } from "../store/store";
+
+type User = {
+  firstName: string;
+  lastName: string;
+  firstLast: string;
+  email: string;
+  userId: string;
+};
 
 const Settings = () => {
+  const userData = useSelector((state: RootState) => state.auth.userData);
   const [formState, dispatchFormState] = useReducer(
     loginFormReducer,
     INITIAL_SETTINGS_FORM_STATE
@@ -20,6 +32,10 @@ const Settings = () => {
     },
     [dispatchFormState]
   );
+
+  if (userData === null) {
+    return <ActivityIndicator />;
+  }
 
   return (
     <View px="20px" backgroundColor={colors.white} flex={1}>
@@ -36,6 +52,7 @@ const Settings = () => {
         inputId={LOGIN_IDS.firstName}
         onChange={onChange}
         autoCapitalize="none"
+        defaultValue={userData.firstName}
         errorText={formState.inputValidities[LOGIN_IDS.firstName]}
       />
 
@@ -50,6 +67,7 @@ const Settings = () => {
         inputId={LOGIN_IDS.lastName}
         onChange={onChange}
         autoCapitalize="none"
+        defaultValue={userData.lastName}
         errorText={formState.inputValidities[LOGIN_IDS.lastName]}
       />
 
@@ -65,6 +83,7 @@ const Settings = () => {
         onChange={onChange}
         keyboardType="email-address"
         autoCapitalize="none"
+        defaultValue={userData.email}
         errorText={formState.inputValidities[LOGIN_IDS.email]}
       />
 

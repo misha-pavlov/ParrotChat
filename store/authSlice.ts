@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { User } from "../types/userTypes";
 
 const authSlice = createSlice({
   name: "auth",
@@ -6,6 +7,10 @@ const authSlice = createSlice({
     token: null,
     userData: null,
     didTryAutoLogin: false,
+  } as {
+    token: null | string;
+    userData: null | User;
+    didTryAutoLogin: boolean;
   },
   reducers: {
     authenticate: (state, action) => {
