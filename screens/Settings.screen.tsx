@@ -9,6 +9,7 @@ import { LOGIN_IDS } from "../config/constants";
 import { loginValidation } from "../utils/validation";
 import { RootState } from "../store/store";
 import { settingsReducer } from "../utils/reducers/settingsReducer";
+import { updateUserData } from "../utils/actions/authActions";
 
 const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +44,22 @@ const Settings = () => {
     [dispatchFormState]
   );
 
-  const saveHandler = useCallback(() => {}, []);
+  const saveHandler = useCallback(async () => {
+    const updatedValues = formState.inputValues;
+    const userId = userData?.userId;
+
+    try {
+      setIsLoading(true);
+
+      if (userId) {
+        await updateUserData(userId, updatedValues);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [formState, userData]);
 
   if (userData === null) {
     return <ActivityIndicator />;
@@ -126,7 +142,7 @@ const Settings = () => {
           isDisabled={!formState.formIsValid}
           onPress={saveHandler}
         >
-          Sign in
+          Save
         </Button>
       )}
     </View>

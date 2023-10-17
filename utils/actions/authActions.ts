@@ -3,7 +3,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { child, getDatabase, ref, set } from "firebase/database";
+import { child, getDatabase, ref, set, update } from "firebase/database";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LOGIN_IDS, ASYNC_STORAGE_KEYS } from "../../config/constants";
 import { getFirebaseApp } from "../firebaseHelper";
@@ -104,6 +104,18 @@ export const userLogout = () => {
   };
 };
 
+export const updateUserData = async (
+  userId: string,
+  newData: { [x: string]: string }
+) => {
+  const { firstName, lastName } = newData;
+  const firstLast = `${firstName} ${lastName}`.toLowerCase();
+  newData.firstLast = firstLast;
+  const dbRef = ref(getDatabase());
+  const childRef = child(dbRef, `users/${userId}`);
+  await update(childRef, newData);
+};
+
 type CreateUserParamsType = {
   firstName: string;
   lastName: string;
@@ -113,7 +125,7 @@ type CreateUserParamsType = {
 
 const createUser = async (params: CreateUserParamsType) => {
   const { firstName, lastName, email, userId } = params;
-  const firstLast = `${firstName} ${lastName}`;
+  const firstLast = `${firstName} ${lastName}`.toLowerCase();
   const userData = {
     firstName,
     lastName,
