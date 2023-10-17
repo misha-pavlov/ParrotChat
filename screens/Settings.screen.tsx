@@ -1,27 +1,37 @@
-import { View } from "native-base";
+import { Button, View } from "native-base";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import { useCallback, useReducer } from "react";
+import { useCallback, useReducer, useState } from "react";
 import { useSelector } from "react-redux";
 import { ActivityIndicator } from "react-native";
 import { LoginInput, ScreenTitle } from "../components";
 import { colors } from "../config/colors";
-import { INITIAL_SETTINGS_FORM_STATE, LOGIN_IDS } from "../config/constants";
+import { LOGIN_IDS } from "../config/constants";
 import { loginValidation } from "../utils/validation";
-import { loginFormReducer } from "../utils/reducers/loginFormReducer";
 import { RootState } from "../store/store";
-
-type User = {
-  firstName: string;
-  lastName: string;
-  firstLast: string;
-  email: string;
-  userId: string;
-};
+import { settingsReducer } from "../utils/reducers/settingsReducer";
 
 const Settings = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const userData = useSelector((state: RootState) => state.auth.userData);
+
+  const INITIAL_SETTINGS_FORM_STATE = {
+    inputValues: {
+      [LOGIN_IDS.firstName]: userData?.firstName || "",
+      [LOGIN_IDS.lastName]: userData?.lastName || "",
+      [LOGIN_IDS.email]: userData?.email || "",
+      [LOGIN_IDS.about]: "",
+    },
+    inputValidities: {
+      [LOGIN_IDS.firstName]: undefined,
+      [LOGIN_IDS.lastName]: undefined,
+      [LOGIN_IDS.email]: undefined,
+      [LOGIN_IDS.about]: undefined,
+    },
+    formIsValid: false,
+  };
+
   const [formState, dispatchFormState] = useReducer(
-    loginFormReducer,
+    settingsReducer,
     INITIAL_SETTINGS_FORM_STATE
   );
 
@@ -32,6 +42,8 @@ const Settings = () => {
     },
     [dispatchFormState]
   );
+
+  const saveHandler = useCallback(() => {}, []);
 
   if (userData === null) {
     return <ActivityIndicator />;
@@ -100,6 +112,23 @@ const Settings = () => {
         autoCapitalize="none"
         errorText={formState.inputValidities[LOGIN_IDS.about]}
       />
+
+      {isLoading ? (
+        <View mt="20px">
+          <ActivityIndicator color={colors.primaryGreen} />
+        </View>
+      ) : (
+        <Button
+          backgroundColor={colors.primaryGreen}
+          borderRadius={30}
+          _pressed={{ opacity: 0.5 }}
+          mt="20px"
+          isDisabled={!formState.formIsValid}
+          onPress={saveHandler}
+        >
+          Sign in
+        </Button>
+      )}
     </View>
   );
 };
