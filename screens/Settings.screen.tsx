@@ -1,4 +1,4 @@
-import { Button, View } from "native-base";
+import { Button, View, useToast } from "native-base";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useCallback, useReducer, useState } from "react";
 import { useSelector } from "react-redux";
@@ -10,11 +10,13 @@ import { loginValidation } from "../utils/validation";
 import { RootState, useAppDispatch } from "../store/store";
 import { settingsReducer } from "../utils/reducers/settingsReducer";
 import { updateUserData, userLogout } from "../utils/actions/authActions";
+import { updateUserDataRedux } from "../store/authSlice";
 
 const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const userData = useSelector((state: RootState) => state.auth.userData);
   const dispatch = useAppDispatch();
+  const toast = useToast();
 
   const INITIAL_SETTINGS_FORM_STATE = {
     inputValues: {
@@ -54,6 +56,10 @@ const Settings = () => {
 
       if (userId) {
         await updateUserData(userId, updatedValues);
+        dispatch(updateUserDataRedux({ newData: updatedValues }));
+        toast.show({
+          description: "Saved!",
+        });
       }
     } catch (error) {
       console.error(error);
