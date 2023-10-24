@@ -1,6 +1,6 @@
 import { Button, View, useToast } from "native-base";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import { useCallback, useReducer, useState } from "react";
+import { useCallback, useMemo, useReducer, useState } from "react";
 import { useSelector } from "react-redux";
 import { ActivityIndicator } from "react-native";
 import { LoginInput, ScreenTitle } from "../components";
@@ -18,12 +18,17 @@ const Settings = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
 
+  const firstName = userData?.firstName || "";
+  const lastName = userData?.lastName || "";
+  const email = userData?.email || "";
+  const about = userData?.about || "";
+
   const INITIAL_SETTINGS_FORM_STATE = {
     inputValues: {
-      [LOGIN_IDS.firstName]: userData?.firstName || "",
-      [LOGIN_IDS.lastName]: userData?.lastName || "",
-      [LOGIN_IDS.email]: userData?.email || "",
-      [LOGIN_IDS.about]: "",
+      [LOGIN_IDS.firstName]: firstName,
+      [LOGIN_IDS.lastName]: lastName,
+      [LOGIN_IDS.email]: email,
+      [LOGIN_IDS.about]: about,
     },
     inputValidities: {
       [LOGIN_IDS.firstName]: undefined,
@@ -66,7 +71,17 @@ const Settings = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [formState, userData]);
+  }, [formState, userData, dispatch]);
+
+  const hasChanges = useMemo(() => {
+    const currentValues = formState.inputValues;
+    return (
+      currentValues.firstName !== firstName ||
+      currentValues.lastName !== lastName ||
+      currentValues.email !== email ||
+      currentValues.about !== about
+    );
+  }, [formState, firstName, lastName, email, about]);
 
   if (userData === null) {
     return <ActivityIndicator />;
@@ -133,6 +148,7 @@ const Settings = () => {
         inputId={LOGIN_IDS.about}
         onChange={onChange}
         autoCapitalize="none"
+        defaultValue={userData.about}
         errorText={formState.inputValidities[LOGIN_IDS.about]}
       />
 
@@ -141,16 +157,18 @@ const Settings = () => {
           <ActivityIndicator color={colors.primaryGreen} />
         </View>
       ) : (
-        <Button
-          backgroundColor={colors.primaryGreen}
-          borderRadius={30}
-          _pressed={{ opacity: 0.5 }}
-          mt="20px"
-          isDisabled={!formState.formIsValid}
-          onPress={saveHandler}
-        >
-          Save
-        </Button>
+        hasChanges && (
+          <Button
+            backgroundColor={colors.primaryGreen}
+            borderRadius={30}
+            _pressed={{ opacity: 0.5 }}
+            mt="20px"
+            isDisabled={!formState.formIsValid}
+            onPress={saveHandler}
+          >
+            Save
+          </Button>
+        )
       )}
 
       <Button
