@@ -7,13 +7,14 @@ import { LoginInput, ScreenTitle } from "../components";
 import { colors } from "../config/colors";
 import { LOGIN_IDS } from "../config/constants";
 import { loginValidation } from "../utils/validation";
-import { RootState } from "../store/store";
+import { RootState, useAppDispatch } from "../store/store";
 import { settingsReducer } from "../utils/reducers/settingsReducer";
-import { updateUserData } from "../utils/actions/authActions";
+import { updateUserData, userLogout } from "../utils/actions/authActions";
 
 const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const userData = useSelector((state: RootState) => state.auth.userData);
+  const dispatch = useAppDispatch();
 
   const INITIAL_SETTINGS_FORM_STATE = {
     inputValues: {
@@ -145,6 +146,16 @@ const Settings = () => {
           Save
         </Button>
       )}
+
+      <Button
+        backgroundColor={colors.logoutRed}
+        borderRadius={30}
+        _pressed={{ opacity: 0.5 }}
+        mt="20px"
+        onPress={() => dispatch(userLogout())}
+      >
+        Logout
+      </Button>
     </View>
   );
 };

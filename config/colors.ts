@@ -7,4 +7,5 @@ export const colors = {
   textColor: "#1c1e21",
   red: "#a91b0d",
   primaryGreen: "#32d48e",
+  logoutRed: "#e74c3c",
 };
