@@ -6,4 +6,5 @@ export type User = {
   about: string;
   userId: string;
   signUpDate: string;
+  profilePicture?: string;
 };

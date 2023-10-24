@@ -4,8 +4,10 @@ import { FC, useCallback, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { colors } from "../config/colors";
 import { launchImagePicker, uploadImage } from "../utils/imagePickerHelper";
+import { updateUserData } from "../utils/actions/authActions";
 
 type ProfileImagePropsTypes = {
+  userId: string;
   userInitials: string;
   size: ThemeComponentSizeType<"Avatar">;
   uri?: string;
@@ -13,6 +15,7 @@ type ProfileImagePropsTypes = {
 
 const ProfileImage: FC<ProfileImagePropsTypes> = ({
   userInitials,
+  userId,
   size,
   uri,
 }) => {
@@ -29,11 +32,12 @@ const ProfileImage: FC<ProfileImagePropsTypes> = ({
         throw new Error("Could not upload image");
       }
 
+      await updateUserData(userId, { profilePicture: uploadedUri });
       setImage(uploadedUri);
     } catch (error) {
       console.error(error);
     }
-  }, []);
+  }, [userId]);
 
   return (
     <Pressable _pressed={{ opacity: 0.5 }} onPress={pickImage}>

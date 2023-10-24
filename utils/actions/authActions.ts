@@ -108,9 +108,12 @@ export const updateUserData = async (
   userId: string,
   newData: { [x: string]: string }
 ) => {
-  const { firstName, lastName } = newData;
-  const firstLast = `${firstName} ${lastName}`.toLowerCase();
-  newData.firstLast = firstLast;
+  if (newData.firstName && newData.lastName) {
+    const { firstName, lastName } = newData;
+    const firstLast = `${firstName} ${lastName}`.toLowerCase();
+    newData.firstLast = firstLast;
+  }
+
   const dbRef = ref(getDatabase());
   const childRef = child(dbRef, `users/${userId}`);
   await update(childRef, newData);

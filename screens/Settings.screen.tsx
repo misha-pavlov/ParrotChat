@@ -95,6 +95,8 @@ const Settings = () => {
         <Center>
           <ProfileImage
             size="xl"
+            userId={userData.userId}
+            uri={userData.profilePicture}
             userInitials={`${userData.firstName[0]} ${userData.lastName[0]}`}
           />
         </Center>
