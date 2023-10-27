@@ -8,18 +8,15 @@ type ChatListPropsTypes = {
   navigation: NavigationProp<ParamListBase>;
 };
 
-const ChatList: FC<ChatListPropsTypes> = ({ navigation }) => {
+const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
+      headerLeft: () => (
         <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-          <Item
-            title="New chat"
-            iconName="create-outline"
-            onPress={() => navigation.navigate('NewChat')}
-          />
+          <Item title="Close" onPress={navigation.goBack} />
         </HeaderButtons>
       ),
+      headeTitle: 'New Chat'
     });
   }, []);
 
@@ -29,10 +26,10 @@ const ChatList: FC<ChatListPropsTypes> = ({ navigation }) => {
         style={{ color: "red" }}
         onPress={() => navigation.navigate("Chat")}
       >
-        Chat
+        New Chat screen
       </Text>
     </View>
   );
 };
 
-export default ChatList;
+export default NewChatScreen;
