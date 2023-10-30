@@ -1,5 +1,5 @@
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
-import { FC, useEffect, useLayoutEffect, useState } from "react";
+import { FC, useCallback, useEffect, useLayoutEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,10 +12,13 @@ import {
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import { FontAwesome } from "@expo/vector-icons";
 import { ActivityIndicator } from "react-native";
+import { useSelector } from "react-redux";
 import { CustomHeaderButton, DataItem } from "../components";
 import { colors } from "../config/colors";
 import { searchUsers } from "../utils/actions/userActions";
 import { User } from "../types/userTypes";
+import { RootState } from "../store/store";
+import { getUserInitials } from "../helpers/userHelpers";
 
 type ChatListPropsTypes = {
   navigation: NavigationProp<ParamListBase>;
@@ -26,6 +29,7 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [noResultFound, setNoResultFound] = useState(false);
+  const userAppData = useSelector((state: RootState) => state.auth.userData);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -53,6 +57,11 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
       setIsLoading(true);
 
       const usersResult = await searchUsers(searchTerm);
+
+      if (userAppData?.userId) {
+        delete usersResult[userAppData.userId];
+      }
+
       setUsers(usersResult);
 
       if (Object.keys(usersResult).length === 0) {
@@ -65,7 +74,11 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
     }, 500);
 
     return () => clearTimeout(delaySearch);
-  }, [searchTerm]);
+  }, [searchTerm, userAppData]);
+
+  const userPressed = useCallback((userId: string) => {
+    navigation.navigate("ChatList", { selectedUserId: userId });
+  }, []);
 
   return (
     <View mx={4}>
@@ -113,6 +126,8 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
                 subTitle={userData.about}
                 image={userData.profilePicture}
                 userId={userData.userId}
+                userInitials={getUserInitials(userData)}
+                onPress={() => userPressed(userData.userId)}
               />
             );
           }}

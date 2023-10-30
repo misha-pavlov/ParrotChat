@@ -4,26 +4,31 @@ import ProfileImage from "./ProfileImage";
 import { colors } from "../config/colors";
 
 type DataItemPropsType = {
-  image?: string;
   userId: string;
   title: string;
   subTitle: string;
+  onPress: VoidFunction;
+  image?: string;
+  userInitials?: string;
 };
 
 const DataItem: FC<DataItemPropsType> = ({
   image,
   userId,
   title,
+  onPress,
   subTitle,
+  userInitials,
 }) => {
   return (
-    <Pressable>
+    <Pressable onPress={onPress}>
       <HStack alignItems="center" space={4}>
         <ProfileImage
-          uri={image}
           size="md"
+          uri={image}
           userId={userId}
           showEditButton={false}
+          userInitials={userInitials}
         />
 
         <VStack>

@@ -11,6 +11,7 @@ import { RootState, useAppDispatch } from "../store/store";
 import { settingsReducer } from "../utils/reducers/settingsReducer";
 import { updateUserData, userLogout } from "../utils/actions/authActions";
 import { updateUserDataRedux } from "../store/authSlice";
+import { getUserInitials } from "../helpers/userHelpers";
 
 const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -97,7 +98,7 @@ const Settings = () => {
             size="xl"
             userId={userData.userId}
             uri={userData.profilePicture}
-            userInitials={`${userData.firstName[0]} ${userData.lastName[0]}`}
+            userInitials={getUserInitials(userData)}
           />
         </Center>
 
