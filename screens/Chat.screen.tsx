@@ -1,5 +1,12 @@
 import { ImageBackground, Platform, StyleSheet } from "react-native";
-import { HStack, IconButton, Input, KeyboardAvoidingView } from "native-base";
+import {
+  Center,
+  HStack,
+  IconButton,
+  Input,
+  KeyboardAvoidingView,
+  Text,
+} from "native-base";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
@@ -17,6 +24,7 @@ const INITIAL_VALUE = "";
 
 type CustomParamListBase = {
   newChatData: { users: string[] };
+  chatId?: string;
 };
 
 type ChatPropsTypes = {
@@ -25,9 +33,11 @@ type ChatPropsTypes = {
 };
 
 const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
-  const chatData = (route?.params as CustomParamListBase)?.newChatData;
+  const params = route?.params as CustomParamListBase;
+  const chatData = params?.newChatData;
   const [messageText, setMessageText] = useState(INITIAL_VALUE);
   const [chatUsers, setChatUsers] = useState<string[]>([]);
+  const [chatId, setChatId] = useState(params?.chatId);
 
   const storedUsers = useSelector(
     (state: RootState) => state.users.storedUsers
@@ -69,11 +79,26 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
         flex={1}
         behavior={Platform.select({ ios: "padding", android: undefined })}
         keyboardVerticalOffset={100}
+        position="relative"
       >
         <ImageBackground
           source={backgroundImage}
           style={styles.backgroundImage}
-        ></ImageBackground>
+        >
+          {!chatId && (
+            <Center
+              position="absolute"
+              backgroundColor={colors.lightGrey}
+              w="90%"
+              top={4}
+              left={4}
+              right={4}
+              borderRadius={5}
+            >
+              <Text>This is new chat!</Text>
+            </Center>
+          )}
+        </ImageBackground>
 
         <HStack
           justifyContent="space-around"
