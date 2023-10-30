@@ -2,11 +2,15 @@ import { ImageBackground, Platform, StyleSheet } from "react-native";
 import { HStack, IconButton, Input, KeyboardAvoidingView } from "native-base";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { FC, useCallback, useState } from "react";
-import { ParamListBase, RouteProp } from "@react-navigation/native";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from "@react-navigation/native";
+import { useSelector } from "react-redux";
 import backgroundImage from "../assets/images/droplet.jpeg";
 import { colors } from "../config/colors";
-import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 
 const INITIAL_VALUE = "";
@@ -16,16 +20,36 @@ type CustomParamListBase = {
 };
 
 type ChatPropsTypes = {
+  navigation: NavigationProp<ParamListBase>;
   route: RouteProp<ParamListBase>;
 };
 
-const Chat: FC<ChatPropsTypes> = ({ route }) => {
+const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const chatData = (route?.params as CustomParamListBase)?.newChatData;
   const [messageText, setMessageText] = useState(INITIAL_VALUE);
+  const [chatUsers, setChatUsers] = useState<string[]>([]);
+
   const storedUsers = useSelector(
     (state: RootState) => state.users.storedUsers
   );
-  console.log("🚀 ~ file: Chat.screen.tsx:29 ~ storedUsers:", storedUsers);
+  const userData = useSelector((state: RootState) => state.auth.userData);
+
+  const getChatTitleFromName = useMemo(() => {
+    const otherUserId = chatData.users.find(
+      (uid) => uid !== userData?.userId
+    ) as string;
+    const otherUserData = storedUsers[otherUserId];
+
+    return `${otherUserData.firstName} ${otherUserData.lastName}`;
+  }, [userData, storedUsers, chatData]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: getChatTitleFromName,
+    });
+
+    setChatUsers(chatData.users);
+  }, [chatData, getChatTitleFromName, navigation]);
 
   const onChangeText = useCallback((value: string) => {
     setMessageText(value);
