@@ -11,9 +11,10 @@ import { updateUserDataRedux } from "../store/authSlice";
 
 type ProfileImagePropsTypes = {
   userId: string;
-  userInitials: string;
+  userInitials?: string;
   size: ThemeComponentSizeType<"Avatar">;
   uri?: string;
+  showEditButton?: boolean;
 };
 
 const ProfileImage: FC<ProfileImagePropsTypes> = ({
@@ -21,6 +22,7 @@ const ProfileImage: FC<ProfileImagePropsTypes> = ({
   userId,
   size,
   uri,
+  showEditButton = true,
 }) => {
   const [image, setImage] = useState(uri);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +52,11 @@ const ProfileImage: FC<ProfileImagePropsTypes> = ({
   }, [userId]);
 
   return (
-    <Pressable _pressed={{ opacity: 0.5 }} onPress={pickImage}>
+    <Pressable
+      _pressed={{ opacity: 0.5 }}
+      onPress={pickImage}
+      disabled={!showEditButton}
+    >
       {isLoading ? (
         <ActivityIndicator
           // 'as string' just for comparing
@@ -65,16 +71,18 @@ const ProfileImage: FC<ProfileImagePropsTypes> = ({
           }}
           size={size}
         >
-          {userInitials}
-          <Avatar.Badge
-            bg={colors.lightGrey}
-            borderWidth={1}
-            borderColor={colors.lightGrey}
-            alignItems="center"
-            justifyContent="center"
-          >
-            <FontAwesome name="pencil" size={15} color="black" />
-          </Avatar.Badge>
+          {userInitials || "image"}
+          {showEditButton && (
+            <Avatar.Badge
+              bg={colors.lightGrey}
+              borderWidth={1}
+              borderColor={colors.lightGrey}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <FontAwesome name="pencil" size={15} color="black" />
+            </Avatar.Badge>
+          )}
         </Avatar>
       )}
     </Pressable>

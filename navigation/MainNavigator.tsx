@@ -2,7 +2,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { Chat, ChatList, ChatSettings, Settings } from "../screens";
-import NewChatScreen from "../screens/NewChatScreen";
+import NewChatScreen from "../screens/NewChat.screen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();

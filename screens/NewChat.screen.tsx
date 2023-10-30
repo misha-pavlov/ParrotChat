@@ -1,12 +1,21 @@
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
 import { FC, useEffect, useLayoutEffect, useState } from "react";
-import { View, Text, HStack, Input, Center, FlatList } from "native-base";
+import {
+  View,
+  Text,
+  HStack,
+  Input,
+  Center,
+  FlatList,
+  Divider,
+} from "native-base";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import { FontAwesome } from "@expo/vector-icons";
-import { CustomHeaderButton } from "../components";
+import { ActivityIndicator } from "react-native";
+import { CustomHeaderButton, DataItem } from "../components";
 import { colors } from "../config/colors";
 import { searchUsers } from "../utils/actions/userActions";
-import { ActivityIndicator } from "react-native";
+import { User } from "../types/userTypes";
 
 type ChatListPropsTypes = {
   navigation: NavigationProp<ParamListBase>;
@@ -92,8 +101,21 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
 
       {!isLoading && !noResultFound && users && (
         <FlatList
+          ItemSeparatorComponent={() => (
+            <Divider height={0.3} backgroundColor={colors.lightGrey} my={2} />
+          )}
           data={Object.keys(users)}
-          renderItem={({ item }) => <Text>{item}</Text>}
+          renderItem={({ item }) => {
+            const userData = users[item] as User;
+            return (
+              <DataItem
+                title={`${userData.firstName} ${userData.lastName}`}
+                subTitle={userData.about}
+                image={userData.profilePicture}
+                userId={userData.userId}
+              />
+            );
+          }}
         />
       )}
 
