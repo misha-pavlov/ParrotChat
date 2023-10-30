@@ -2,14 +2,30 @@ import { ImageBackground, Platform, StyleSheet } from "react-native";
 import { HStack, IconButton, Input, KeyboardAvoidingView } from "native-base";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { useCallback, useState } from "react";
+import { FC, useCallback, useState } from "react";
+import { ParamListBase, RouteProp } from "@react-navigation/native";
 import backgroundImage from "../assets/images/droplet.jpeg";
 import { colors } from "../config/colors";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
 
 const INITIAL_VALUE = "";
 
-const Chat = () => {
+type CustomParamListBase = {
+  newChatData: { users: string[] };
+};
+
+type ChatPropsTypes = {
+  route: RouteProp<ParamListBase>;
+};
+
+const Chat: FC<ChatPropsTypes> = ({ route }) => {
+  const chatData = (route?.params as CustomParamListBase)?.newChatData;
   const [messageText, setMessageText] = useState(INITIAL_VALUE);
+  const storedUsers = useSelector(
+    (state: RootState) => state.users.storedUsers
+  );
+  console.log("🚀 ~ file: Chat.screen.tsx:29 ~ storedUsers:", storedUsers);
 
   const onChangeText = useCallback((value: string) => {
     setMessageText(value);

@@ -10,20 +10,17 @@ import { useSelector } from "react-redux";
 import { CustomHeaderButton } from "../components";
 import { RootState } from "../store/store";
 
-type CustomParamListBase = ParamListBase & {
-  params: {
-    selectedUserId?: string;
-  };
+type CustomParamListBase = {
+  selectedUserId?: string;
 };
 
 type ChatListPropsTypes = {
   navigation: NavigationProp<ParamListBase>;
-  route: RouteProp<CustomParamListBase>;
+  route: RouteProp<ParamListBase>;
 };
 
 const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
-  const selectedUserId = (route?.params as { selectedUserId?: string })
-    ?.selectedUserId;
+  const selectedUserId = (route?.params as CustomParamListBase)?.selectedUserId;
   const userData = useSelector((state: RootState) => state.auth.userData);
 
   useLayoutEffect(() => {
@@ -46,8 +43,9 @@ const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
     }
 
     const chatUsers = [selectedUserId, userData?.userId];
-    navigation.navigate("Chat", { users: chatUsers });
-  }, [selectedUserId, navigation, userData]);
+    const navigationProps = { newChatData: { users: chatUsers } };
+    navigation.navigate("Chat", navigationProps);
+  }, [selectedUserId, navigation, userData, route]);
 
   return (
     <View>

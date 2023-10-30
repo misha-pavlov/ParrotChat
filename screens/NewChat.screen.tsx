@@ -17,8 +17,9 @@ import { CustomHeaderButton, DataItem } from "../components";
 import { colors } from "../config/colors";
 import { searchUsers } from "../utils/actions/userActions";
 import { User } from "../types/userTypes";
-import { RootState } from "../store/store";
+import { RootState, useAppDispatch } from "../store/store";
 import { getUserInitials } from "../helpers/userHelpers";
+import { setStoredUsers } from "../store/userSlice";
 
 type ChatListPropsTypes = {
   navigation: NavigationProp<ParamListBase>;
@@ -30,6 +31,7 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [noResultFound, setNoResultFound] = useState(false);
   const userAppData = useSelector((state: RootState) => state.auth.userData);
+  const dispatch = useAppDispatch();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -68,13 +70,14 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
         setNoResultFound(true);
       } else {
         setNoResultFound(false);
+        dispatch(setStoredUsers({ users: usersResult }));
       }
 
       setIsLoading(false);
     }, 500);
 
     return () => clearTimeout(delaySearch);
-  }, [searchTerm, userAppData]);
+  }, [searchTerm, userAppData, dispatch, setStoredUsers]);
 
   const userPressed = useCallback((userId: string) => {
     navigation.navigate("ChatList", { selectedUserId: userId });
