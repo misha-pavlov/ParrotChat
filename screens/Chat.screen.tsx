@@ -19,6 +19,7 @@ import { useSelector } from "react-redux";
 import backgroundImage from "../assets/images/droplet.jpeg";
 import { colors } from "../config/colors";
 import { RootState } from "../store/store";
+import { createChat } from "../utils/actions/chatActions";
 
 const INITIAL_VALUE = "";
 
@@ -65,10 +66,25 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
     setMessageText(value);
   }, []);
 
-  const onSendMessage = useCallback(() => {
+  const onSendMessage = useCallback(async () => {
     console.log("messageText = ", messageText.trim());
+
+    try {
+      let id = chatId;
+
+      if (!id) {
+        // no chat id create the chat
+        if (userData?.userId) {
+          id = await createChat(userData.userId, params.newChatData);
+          setChatId(id);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
     setMessageText(INITIAL_VALUE);
-  }, [messageText]);
+  }, [messageText, chatId, params, userData]);
 
   return (
     <SafeAreaView
