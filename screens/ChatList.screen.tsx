@@ -22,6 +22,8 @@ type ChatListPropsTypes = {
 const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   const selectedUserId = (route?.params as CustomParamListBase)?.selectedUserId;
   const userData = useSelector((state: RootState) => state.auth.userData);
+  const userChats = useSelector((state: RootState) => state.chats.chatsData);
+  console.log("🚀 ~ file: ChatList.screen.tsx:26 ~ userChats:", userChats);
 
   useLayoutEffect(() => {
     navigation.setOptions({
