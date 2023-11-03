@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { child, getDatabase, off, onValue, ref } from "firebase/database";
+import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import { ActivityIndicator } from "react-native";
 import { Chat, ChatList, ChatSettings, Settings } from "../screens";
 import NewChatScreen from "../screens/NewChat.screen";
@@ -12,6 +12,7 @@ import { getFirebaseApp } from "../utils/firebaseHelper";
 import { Chat as ChatType } from "../types/chatTypes";
 import { setChatData } from "../store/chatSlice";
 import { colors } from "../config/colors";
+import { setStoredUsers } from "../store/userSlice";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -79,6 +80,9 @@ const StackNavigator = () => (
 
 const MainNavigator = () => {
   const userData = useSelector((state: RootState) => state.auth.userData);
+  const storedUsers = useSelector(
+    (state: RootState) => state.users.storedUsers
+  );
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -105,8 +109,20 @@ const MainNavigator = () => {
           const data = chatSnapshot.val();
           const key = chatSnapshot.key;
 
+          data.users.forEach((uid: string) => {
+            if (storedUsers[uid]) return;
+
+            const userRef = child(dbRef, `users/${uid}`);
+            get(userRef).then((userSnapshot) => {
+              const userSnapshotData = userSnapshot.val();
+              dispatch(setStoredUsers({ users: { userSnapshotData } }));
+            });
+
+            refs.push(userRef);
+          });
+
           if (data && key) {
-            chatsData[key] = data;
+            chatsData[key] = { ...data, key };
           }
 
           if (chatsFoundCount >= chatIds.length) {

@@ -35,10 +35,12 @@ type ChatPropsTypes = {
 
 const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const params = route?.params as CustomParamListBase;
-  const chatData = params?.newChatData;
   const [messageText, setMessageText] = useState(INITIAL_VALUE);
   const [chatUsers, setChatUsers] = useState<string[]>([]);
   const [chatId, setChatId] = useState(params?.chatId);
+
+  const userChats = useSelector((state: RootState) => state.chats.chatsData);
+  const chatData = (chatId && userChats[chatId]) || params?.newChatData;
 
   const storedUsers = useSelector(
     (state: RootState) => state.users.storedUsers

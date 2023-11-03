@@ -4,11 +4,14 @@ import {
   RouteProp,
 } from "@react-navigation/native";
 import { FC, useEffect, useLayoutEffect } from "react";
-import { View, Text } from "react-native";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import { useSelector } from "react-redux";
-import { CustomHeaderButton } from "../components";
+import { Divider, FlatList, View } from "native-base";
+import { CustomHeaderButton, DataItem, ScreenTitle } from "../components";
 import { RootState } from "../store/store";
+import { Chat } from "../types/chatTypes";
+import { getUserInitials } from "../helpers/userHelpers";
+import { colors } from "../config/colors";
 
 type CustomParamListBase = {
   selectedUserId?: string;
@@ -22,8 +25,14 @@ type ChatListPropsTypes = {
 const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   const selectedUserId = (route?.params as CustomParamListBase)?.selectedUserId;
   const userData = useSelector((state: RootState) => state.auth.userData);
-  const userChats = useSelector((state: RootState) => state.chats.chatsData);
-  console.log("🚀 ~ file: ChatList.screen.tsx:26 ~ userChats:", userChats);
+  const userChats = useSelector((state: RootState) =>
+    Object.values(state.chats.chatsData).sort(
+      (a, b) => Number(new Date(b.updatedAt)) - Number(new Date(a.updatedAt))
+    )
+  );
+  const storedUsers = useSelector(
+    (state: RootState) => state.users.storedUsers
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -50,13 +59,37 @@ const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   }, [selectedUserId, navigation, userData, route]);
 
   return (
-    <View>
-      <Text
-        style={{ color: "red" }}
-        onPress={() => navigation.navigate("Chat")}
-      >
-        Chat
-      </Text>
+    <View px="20px" backgroundColor={colors.white} flex={1}>
+      <ScreenTitle text="Chats" />
+      <FlatList
+        data={userChats}
+        ItemSeparatorComponent={() => (
+          <Divider height={0.3} backgroundColor={colors.lightGrey} my={2} />
+        )}
+        renderItem={({ item }: { item: Chat }) => {
+          const otherUserId = item.users.find(
+            (uid) => uid !== userData?.userId
+          ) as string;
+          const otherUser = storedUsers[otherUserId];
+          const chatId = item.key;
+
+          if (!otherUser) return null;
+
+          const title = `${otherUser.firstName} ${otherUser.lastName}`;
+          const subTitle = "This will be a message";
+
+          return (
+            <DataItem
+              title={title}
+              userId={otherUser.userId}
+              subTitle={subTitle}
+              userInitials={getUserInitials(otherUser)}
+              image={otherUser.profilePicture}
+              onPress={() => navigation.navigate("Chat", { chatId })}
+            />
+          );
+        }}
+      />
     </View>
   );
 };
