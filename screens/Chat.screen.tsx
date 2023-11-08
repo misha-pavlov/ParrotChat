@@ -19,7 +19,7 @@ import { useSelector } from "react-redux";
 import backgroundImage from "../assets/images/droplet.jpeg";
 import { colors } from "../config/colors";
 import { RootState } from "../store/store";
-import { createChat } from "../utils/actions/chatActions";
+import { createChat, sendTextMessage } from "../utils/actions/chatActions";
 
 const INITIAL_VALUE = "";
 
@@ -73,13 +73,18 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
 
     try {
       let id = chatId;
+      const userId = userData?.userId;
 
       if (!id) {
         // no chat id create the chat
-        if (userData?.userId) {
-          id = await createChat(userData.userId, params.newChatData);
+        if (userId) {
+          id = await createChat(userId, params.newChatData);
           setChatId(id);
         }
+      }
+
+      if (chatId && userId) {
+        await sendTextMessage(chatId, userId, messageText);
       }
     } catch (error) {
       console.error(error);

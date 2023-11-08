@@ -1,15 +1,13 @@
 import {
-  DataSnapshot,
   child,
-  get,
   getDatabase,
   push,
   ref,
 } from "firebase/database";
 import { getFirebaseApp } from "../firebaseHelper";
+import { Chat } from "../../types/chatTypes";
 
-// TODO: change on chat type
-export const createChat = async (userId: string, chatData: any) => {
+export const createChat = async (userId: string, chatData: Pick<Chat, 'users'>) => {
   const newChatData = {
     ...chatData,
     createdBy: userId,
@@ -30,3 +28,17 @@ export const createChat = async (userId: string, chatData: any) => {
 
   return newChat.key || undefined;
 };
+
+export const sendTextMessage = async (chatId: string, senderId: string, messageText: string) => {
+  const app = getFirebaseApp();
+  const dbRef = ref(getDatabase(app));
+  const messagesRef = child(dbRef, `messages/${chatId}`);
+
+  const messageData = {
+    sendBy: senderId,
+    sentAt: new Date().toISOString(),
+    text: messageText
+  }
+
+  await push(messagesRef, messageData);
+}
