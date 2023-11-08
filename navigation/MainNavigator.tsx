@@ -13,6 +13,7 @@ import { Chat as ChatType } from "../types/chatTypes";
 import { setChatData } from "../store/chatSlice";
 import { colors } from "../config/colors";
 import { setStoredUsers } from "../store/userSlice";
+import { setChatMessages } from "../store/messagesSlice";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -129,6 +130,14 @@ const MainNavigator = () => {
             setIsLoading(false);
             dispatch(setChatData({ chatsData }));
           }
+        });
+
+        const messagesRef = child(dbRef, `messages/${chatId}`);
+        refs.push(messagesRef);
+
+        onValue(messagesRef, (messagesSnapshot) => {
+          const messagesData = messagesSnapshot.val();
+          dispatch(setChatMessages({ chatId, messagesData }));
         });
 
         if (chatsFoundCount === 0) {

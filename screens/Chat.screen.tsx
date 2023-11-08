@@ -46,6 +46,9 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
     (state: RootState) => state.users.storedUsers
   );
   const userData = useSelector((state: RootState) => state.auth.userData);
+  const messagesData = useSelector(
+    (state: RootState) => state.messages.messagesData
+  );
 
   const getChatTitleFromName = useMemo(() => {
     const otherUserId = chatData.users.find(
