@@ -3,6 +3,7 @@ import {
   getDatabase,
   push,
   ref,
+  update,
 } from "firebase/database";
 import { getFirebaseApp } from "../firebaseHelper";
 import { Chat } from "../../types/chatTypes";
@@ -39,6 +40,8 @@ export const sendTextMessage = async (chatId: string, senderId: string, messageT
     sentAt: new Date().toISOString(),
     text: messageText
   }
-
   await push(messagesRef, messageData);
+
+  const chatRef = child(dbRef, `chats/${chatId}`);
+  await update(chatRef, { updatedBy: senderId, updatedAt: new Date().toISOString(), latestMessageText: messageText })
 }

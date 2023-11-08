@@ -4,5 +4,6 @@ export type Chat = {
   createdBy: string;
   updatedAt: Date;
   updatedBy: string;
+  latestMessageText: string;
   users: string[];
 };
