@@ -1,11 +1,12 @@
 import { ImageBackground, Platform, StyleSheet } from "react-native";
 import {
-  Center,
+  FlatList,
   HStack,
   IconButton,
   Input,
   KeyboardAvoidingView,
   Text,
+  View,
 } from "native-base";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -20,7 +21,7 @@ import backgroundImage from "../assets/images/droplet.jpeg";
 import { colors } from "../config/colors";
 import { RootState } from "../store/store";
 import { createChat, sendTextMessage } from "../utils/actions/chatActions";
-import { Bubble } from "../components";
+import { Bubble, MessageItem } from "../components";
 
 const INITIAL_VALUE = "";
 
@@ -63,7 +64,10 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
 
     return messagesList;
   });
-  console.log("🚀 ~ file: Chat.screen.tsx:66 ~ chatMessages ~ chatMessages:", chatMessages)
+  console.log(
+    "🚀 ~ file: Chat.screen.tsx:66 ~ chatMessages ~ chatMessages:",
+    chatMessages
+  );
 
   const getChatTitleFromName = useMemo(() => {
     const otherUserId = chatData.users.find(
@@ -131,6 +135,20 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
 
           {errorBannerText !== "" && (
             <Bubble text={errorBannerText} type="error" />
+          )}
+
+          {chatId && (
+            <FlatList
+              data={chatMessages}
+              p={4}
+              renderItem={({ item }) => {
+                const message = item;
+                const isOwnMessage = message.sendBy === userData?.userId;
+                const messgaeType = isOwnMessage ? "myMessage" : "theirMessage";
+                return <MessageItem text={message.text} type={messgaeType} />;
+              }}
+              ItemSeparatorComponent={() => <View mt={2} />}
+            />
           )}
         </ImageBackground>
 
