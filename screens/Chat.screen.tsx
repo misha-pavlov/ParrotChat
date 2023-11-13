@@ -20,6 +20,7 @@ import backgroundImage from "../assets/images/droplet.jpeg";
 import { colors } from "../config/colors";
 import { RootState } from "../store/store";
 import { createChat, sendTextMessage } from "../utils/actions/chatActions";
+import { Bubble } from "../components";
 
 const INITIAL_VALUE = "";
 
@@ -38,6 +39,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const [messageText, setMessageText] = useState(INITIAL_VALUE);
   const [chatUsers, setChatUsers] = useState<string[]>([]);
   const [chatId, setChatId] = useState(params?.chatId);
+  const [errorBannerText, setErrorBannerText] = useState("");
 
   const userChats = useSelector((state: RootState) => state.chats.chatsData);
   const chatData = (chatId && userChats[chatId]) || params?.newChatData;
@@ -46,7 +48,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
     (state: RootState) => state.users.storedUsers
   );
   const userData = useSelector((state: RootState) => state.auth.userData);
-  const messagesData = useSelector(
+  const chatMessages = useSelector(
     (state: RootState) => state.messages.messagesData
   );
 
@@ -89,11 +91,12 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
       if (chatId && userId) {
         await sendTextMessage(chatId, userId, messageText);
       }
+      setMessageText(INITIAL_VALUE);
     } catch (error) {
       console.error(error);
+      setErrorBannerText("Message failed to send!");
+      setTimeout(() => setErrorBannerText(""), 5000);
     }
-
-    setMessageText(INITIAL_VALUE);
   }, [messageText, chatId, params, userData]);
 
   return (
@@ -111,18 +114,10 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
           source={backgroundImage}
           style={styles.backgroundImage}
         >
-          {!chatId && (
-            <Center
-              position="absolute"
-              backgroundColor={colors.lightGrey}
-              w="90%"
-              top={4}
-              left={4}
-              right={4}
-              borderRadius={5}
-            >
-              <Text>This is new chat!</Text>
-            </Center>
+          {!chatId && <Bubble text="This is new chat!" type="system" />}
+
+          {errorBannerText !== "" && (
+            <Bubble text={errorBannerText} type="error" />
           )}
         </ImageBackground>
 
