@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { Message } from "../types/messageTypes";
 
-type MessagesData = { [x: string]: Message };
+type MessagesData = { [x: string]: { [y: string]: Message } };
 
 const messagesSlice = createSlice({
     name: "messages",

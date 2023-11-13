@@ -48,9 +48,22 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
     (state: RootState) => state.users.storedUsers
   );
   const userData = useSelector((state: RootState) => state.auth.userData);
-  const chatMessages = useSelector(
-    (state: RootState) => state.messages.messagesData
-  );
+  const chatMessages = useSelector((state: RootState) => {
+    if (!chatId) return [];
+
+    const chatMessagesData = state.messages.messagesData[chatId];
+
+    if (!chatMessagesData) return [];
+
+    const messagesList = [];
+    for (const key in chatMessagesData) {
+      const message = chatMessagesData[key];
+      messagesList.push({ key, ...message });
+    }
+
+    return messagesList;
+  });
+  console.log("🚀 ~ file: Chat.screen.tsx:66 ~ chatMessages ~ chatMessages:", chatMessages)
 
   const getChatTitleFromName = useMemo(() => {
     const otherUserId = chatData.users.find(
