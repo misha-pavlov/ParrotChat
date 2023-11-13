@@ -6,6 +6,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NativeBaseProvider, extendTheme } from "native-base";
 import { LogBox } from "react-native";
 import { Provider } from "react-redux";
+import { MenuProvider } from "react-native-popup-menu";
 import AppNavigator from "./navigation/AppNavigator";
 import { store } from "./store/store";
 
@@ -82,7 +83,9 @@ export default function App() {
     <Provider store={store}>
       <NativeBaseProvider>
         <SafeAreaProvider onLayout={onLayoutRootView}>
-          <AppNavigator />
+          <MenuProvider>
+            <AppNavigator />
+          </MenuProvider>
         </SafeAreaProvider>
       </NativeBaseProvider>
     </Provider>

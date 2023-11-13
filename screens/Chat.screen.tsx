@@ -64,10 +64,6 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
 
     return messagesList;
   });
-  console.log(
-    "🚀 ~ file: Chat.screen.tsx:66 ~ chatMessages ~ chatMessages:",
-    chatMessages
-  );
 
   const getChatTitleFromName = useMemo(() => {
     const otherUserId = chatData.users.find(
@@ -91,8 +87,6 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   }, []);
 
   const onSendMessage = useCallback(async () => {
-    console.log("messageText = ", messageText.trim());
-
     try {
       let id = chatId;
       const userId = userData?.userId;
