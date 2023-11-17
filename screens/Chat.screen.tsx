@@ -21,7 +21,7 @@ import backgroundImage from "../assets/images/droplet.jpeg";
 import { colors } from "../config/colors";
 import { RootState } from "../store/store";
 import { createChat, sendTextMessage } from "../utils/actions/chatActions";
-import { Bubble, MessageItem } from "../components";
+import { Bubble, MessageItem, ReplyTo } from "../components";
 
 const INITIAL_VALUE = "";
 
@@ -41,6 +41,9 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const [chatUsers, setChatUsers] = useState<string[]>([]);
   const [chatId, setChatId] = useState(params?.chatId);
   const [errorBannerText, setErrorBannerText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<
+    { text: string; sentBy: string } | undefined
+  >();
 
   const userChats = useSelector((state: RootState) => state.chats.chatsData);
   const chatData = (chatId && userChats[chatId]) || params?.newChatData;
@@ -148,10 +151,24 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
                     userId={userId}
                     chatId={chatId}
                     date={message.sentAt}
+                    setReply={() =>
+                      setReplyingTo({
+                        text: message.text,
+                        sentBy: message.sendBy,
+                      })
+                    }
                   />
                 );
               }}
               ItemSeparatorComponent={() => <View mt={2} />}
+            />
+          )}
+
+          {replyingTo && (
+            <ReplyTo
+              text={replyingTo.text}
+              user={storedUsers[replyingTo.sentBy]}
+              onCancel={() => setReplyingTo(undefined)}
             />
           )}
         </ImageBackground>

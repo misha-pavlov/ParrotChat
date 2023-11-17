@@ -21,6 +21,7 @@ type MessageItemPropsType = {
   chatId: string;
   date: Date;
   type: "myMessage" | "theirMessage";
+  setReply: VoidFunction;
 };
 
 type MenuItemParams = {
@@ -37,6 +38,7 @@ const MessageItem: FC<MessageItemPropsType> = ({
   chatId,
   userId,
   date,
+  setReply
 }) => {
   const isMyMessage = type === "myMessage";
   const menuRef = useRef<Menu>(null);
@@ -108,6 +110,11 @@ const MessageItem: FC<MessageItemPropsType> = ({
             onSelect: () => starMessage(messageId, chatId, userId),
             icon: isStarred ? "star-o" : "star",
             IconPack: FontAwesome,
+          })}
+          {renderMenuItem({
+            text: 'Reply',
+            onSelect: setReply,
+            icon: 'arrow-left-circle',
           })}
         </MenuOptions>
       </Menu>
