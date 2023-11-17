@@ -147,6 +147,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
                     messageId={message.key}
                     userId={userId}
                     chatId={chatId}
+                    date={message.sentAt}
                   />
                 );
               }}

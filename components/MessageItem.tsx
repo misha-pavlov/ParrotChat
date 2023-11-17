@@ -12,12 +12,14 @@ import { useSelector } from "react-redux";
 import { colors } from "../config/colors";
 import { starMessage } from "../utils/actions/chatActions";
 import { RootState } from "../store/store";
+import { formatAmPm } from "../helpers/dateHelpers";
 
 type MessageItemPropsType = {
   text: string;
   messageId: string;
   userId: string;
   chatId: string;
+  date: Date;
   type: "myMessage" | "theirMessage";
 };
 
@@ -34,6 +36,7 @@ const MessageItem: FC<MessageItemPropsType> = ({
   messageId,
   chatId,
   userId,
+  date,
 }) => {
   const isMyMessage = type === "myMessage";
   const menuRef = useRef<Menu>(null);
@@ -77,6 +80,20 @@ const MessageItem: FC<MessageItemPropsType> = ({
       onLongPress={() => menuRef.current?.open()}
     >
       <Text>{text}</Text>
+
+      <HStack alignSelf="flex-end" alignItems="center" space={1}>
+        {isStarred && (
+          <FontAwesome name="star" size={14} color={colors.grey} />
+        )}
+        <Text
+          fontFamily="Quicksand-Regular"
+          letterSpacing={0.3}
+          color={colors.grey}
+          fontSize={12}
+        >
+          {formatAmPm(new Date(date))}
+        </Text>
+      </HStack>
 
       <Menu ref={menuRef}>
         <MenuTrigger />
