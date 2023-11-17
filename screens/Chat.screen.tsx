@@ -64,6 +64,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
 
     return messagesList;
   });
+  const userId = userData?.userId;
 
   const getChatTitleFromName = useMemo(() => {
     const otherUserId = chatData.users.find(
@@ -131,15 +132,23 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
             <Bubble text={errorBannerText} type="error" />
           )}
 
-          {chatId && (
+          {chatId && userId && (
             <FlatList
               data={chatMessages}
               p={4}
               renderItem={({ item }) => {
                 const message = item;
-                const isOwnMessage = message.sendBy === userData?.userId;
-                const messgaeType = isOwnMessage ? "myMessage" : "theirMessage";
-                return <MessageItem text={message.text} type={messgaeType} />;
+                const isOwnMessage = message.sendBy === userId;
+                const messageType = isOwnMessage ? "myMessage" : "theirMessage";
+                return (
+                  <MessageItem
+                    text={message.text}
+                    type={messageType}
+                    messageId={message.key}
+                    userId={userId}
+                    chatId={chatId}
+                  />
+                );
               }}
               ItemSeparatorComponent={() => <View mt={2} />}
             />

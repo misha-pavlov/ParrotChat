@@ -3,3 +3,9 @@ export type Message = {
     sentAt: Date;
     text: string
 }
+
+export type StarredMessages = {
+    messageId: string;
+    chatId: string;
+    starredAt: Date;
+}

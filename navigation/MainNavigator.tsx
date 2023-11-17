@@ -13,7 +13,7 @@ import { Chat as ChatType } from "../types/chatTypes";
 import { setChatData } from "../store/chatSlice";
 import { colors } from "../config/colors";
 import { setStoredUsers } from "../store/userSlice";
-import { setChatMessages } from "../store/messagesSlice";
+import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -144,6 +144,17 @@ const MainNavigator = () => {
           setIsLoading(false);
         }
       }
+    });
+
+    const userStarredMessagesRef = child(
+      dbRef,
+      `userStarredMessages/${userData?.userId}`
+    );
+    refs.push(userStarredMessagesRef);
+
+    onValue(userStarredMessagesRef, (querySnapshot) => {
+      const starredMessages = querySnapshot.val() ?? {};
+      dispatch(setStarredMessages({ starredMessages }));
     });
 
     () => {

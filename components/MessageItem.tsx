@@ -8,10 +8,16 @@ import {
 } from "react-native-popup-menu";
 import * as Clipboard from "expo-clipboard";
 import { Feather, FontAwesome } from "@expo/vector-icons";
+import { useSelector } from "react-redux";
 import { colors } from "../config/colors";
+import { starMessage } from "../utils/actions/chatActions";
+import { RootState } from "../store/store";
 
 type MessageItemPropsType = {
   text: string;
+  messageId: string;
+  userId: string;
+  chatId: string;
   type: "myMessage" | "theirMessage";
 };
 
@@ -22,9 +28,19 @@ type MenuItemParams = {
   onSelect: VoidFunction;
 };
 
-const MessageItem: FC<MessageItemPropsType> = ({ text, type }) => {
+const MessageItem: FC<MessageItemPropsType> = ({
+  text,
+  type,
+  messageId,
+  chatId,
+  userId,
+}) => {
   const isMyMessage = type === "myMessage";
   const menuRef = useRef<Menu>(null);
+  const starredMessages = useSelector(
+    (state: RootState) => state.messages.starredMessages[chatId] ?? {}
+  );
+  const isStarred = starredMessages[messageId] !== undefined;
 
   const copyToClipboard = useCallback(
     async (text: string) => Clipboard.setStringAsync(text),
@@ -71,10 +87,10 @@ const MessageItem: FC<MessageItemPropsType> = ({ text, type }) => {
             icon: "copy",
           })}
           {renderMenuItem({
-            text: "Star message",
-            onSelect: () => copyToClipboard(text),
-            icon: "star-o",
-            IconPack: FontAwesome
+            text: `${isStarred ? "Unstar" : "Star"} message`,
+            onSelect: () => starMessage(messageId, chatId, userId),
+            icon: isStarred ? "star-o" : "star",
+            IconPack: FontAwesome,
           })}
         </MenuOptions>
       </Menu>
