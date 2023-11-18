@@ -10,6 +10,7 @@ import {
 } from "firebase/database";
 import { getFirebaseApp } from "../firebaseHelper";
 import { Chat } from "../../types/chatTypes";
+import { Message } from "../../types/messageTypes";
 
 export const createChat = async (userId: string, chatData: Pick<Chat, 'users'>) => {
   const newChatData = {
@@ -33,16 +34,21 @@ export const createChat = async (userId: string, chatData: Pick<Chat, 'users'>) 
   return newChat.key || undefined;
 };
 
-export const sendTextMessage = async (chatId: string, senderId: string, messageText: string) => {
+export const sendTextMessage = async (chatId: string, senderId: string, messageText: string, replyId?: string) => {
   const app = getFirebaseApp();
   const dbRef = ref(getDatabase(app));
   const messagesRef = child(dbRef, `messages/${chatId}`);
 
-  const messageData = {
+  const messageData: Message = {
     sendBy: senderId,
     sentAt: new Date().toISOString(),
     text: messageText
   }
+
+  if (replyId) {
+    messageData.replyId = replyId;
+  }
+
   await push(messagesRef, messageData);
 
   const chatRef = child(dbRef, `chats/${chatId}`);

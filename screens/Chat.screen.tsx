@@ -22,6 +22,7 @@ import { colors } from "../config/colors";
 import { RootState } from "../store/store";
 import { createChat, sendTextMessage } from "../utils/actions/chatActions";
 import { Bubble, MessageItem, ReplyTo } from "../components";
+import { getUserName } from "../helpers/userHelpers";
 
 const INITIAL_VALUE = "";
 
@@ -42,7 +43,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const [chatId, setChatId] = useState(params?.chatId);
   const [errorBannerText, setErrorBannerText] = useState("");
   const [replyingTo, setReplyingTo] = useState<
-    { text: string; sentBy: string } | undefined
+    { text: string; sentBy: string; key: string } | undefined
   >();
 
   const userChats = useSelector((state: RootState) => state.chats.chatsData);
@@ -75,7 +76,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
     ) as string;
     const otherUserData = storedUsers[otherUserId];
 
-    return `${otherUserData.firstName} ${otherUserData.lastName}`;
+    return getUserName(otherUserData);
   }, [userData, storedUsers, chatData]);
 
   useEffect(() => {
@@ -104,15 +105,16 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
       }
 
       if (chatId && userId) {
-        await sendTextMessage(chatId, userId, messageText);
+        await sendTextMessage(chatId, userId, messageText, replyingTo?.key);
       }
       setMessageText(INITIAL_VALUE);
+      setReplyingTo(undefined);
     } catch (error) {
       console.error(error);
       setErrorBannerText("Message failed to send!");
       setTimeout(() => setErrorBannerText(""), 5000);
     }
-  }, [messageText, chatId, params, userData]);
+  }, [messageText, chatId, params, userData, replyingTo]);
 
   return (
     <SafeAreaView
@@ -151,8 +153,14 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
                     userId={userId}
                     chatId={chatId}
                     date={message.sentAt}
+                    replyingTo={
+                      message?.replyId
+                        ? chatMessages.find((i) => i.key === message.replyId)
+                        : undefined
+                    }
                     setReply={() =>
                       setReplyingTo({
+                        key: message.key,
                         text: message.text,
                         sentBy: message.sendBy,
                       })

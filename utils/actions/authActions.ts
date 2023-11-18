@@ -10,6 +10,8 @@ import { getFirebaseApp } from "../firebaseHelper";
 import { authenticate, logout } from "../../store/authSlice";
 import { getUserData } from "./userActions";
 import { AppDispatch } from "../../store/store";
+import { getUserName } from "../../helpers/userHelpers";
+import { User } from "../../types/userTypes";
 
 let timer: NodeJS.Timeout;
 
@@ -109,8 +111,7 @@ export const updateUserData = async (
   newData: { [x: string]: string }
 ) => {
   if (newData.firstName && newData.lastName) {
-    const { firstName, lastName } = newData;
-    const firstLast = `${firstName} ${lastName}`.toLowerCase();
+    const firstLast = getUserName(newData as User).toLowerCase();
     newData.firstLast = firstLast;
   }
 
@@ -128,7 +129,7 @@ type CreateUserParamsType = {
 
 const createUser = async (params: CreateUserParamsType) => {
   const { firstName, lastName, email, userId } = params;
-  const firstLast = `${firstName} ${lastName}`.toLowerCase();
+  const firstLast = getUserName(params as User).toLowerCase();
   const userData = {
     firstName,
     lastName,

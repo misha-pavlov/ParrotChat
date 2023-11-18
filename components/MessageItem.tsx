@@ -1,5 +1,5 @@
 import { HStack, Pressable, Text } from "native-base";
-import { FC, useCallback, useRef } from "react";
+import { FC, useCallback, useMemo, useRef } from "react";
 import {
   Menu,
   MenuOptions,
@@ -13,15 +13,19 @@ import { colors } from "../config/colors";
 import { starMessage } from "../utils/actions/chatActions";
 import { RootState } from "../store/store";
 import { formatAmPm } from "../helpers/dateHelpers";
+import { Message } from "../types/messageTypes";
+import { getUserName } from "../helpers/userHelpers";
 
 type MessageItemPropsType = {
   text: string;
-  messageId: string;
-  userId: string;
-  chatId: string;
-  date: Date;
-  type: "myMessage" | "theirMessage";
-  setReply: VoidFunction;
+  type: "myMessage" | "theirMessage" | "reply";
+  setReply?: VoidFunction;
+  replyingTo?: Message;
+  name?: string;
+  messageId?: string;
+  userId?: string;
+  chatId?: string;
+  date?: string;
 };
 
 type MenuItemParams = {
@@ -38,14 +42,24 @@ const MessageItem: FC<MessageItemPropsType> = ({
   chatId,
   userId,
   date,
-  setReply
+  setReply,
+  replyingTo,
+  name,
 }) => {
-  const isMyMessage = type === "myMessage";
   const menuRef = useRef<Menu>(null);
-  const starredMessages = useSelector(
-    (state: RootState) => state.messages.starredMessages[chatId] ?? {}
+  const starredMessages = useSelector((state: RootState) =>
+    chatId ? state.messages.starredMessages[chatId] : {}
   );
-  const isStarred = starredMessages[messageId] !== undefined;
+  const storedUsers = useSelector(
+    (state: RootState) => state.users.storedUsers
+  );
+
+  const isMyMessage = type === "myMessage";
+  const isReply = type === "reply";
+  const isStarred = messageId
+    ? starredMessages[messageId] !== undefined
+    : false;
+  const replyingToUser = replyingTo && storedUsers[replyingTo.sendBy];
 
   const copyToClipboard = useCallback(
     async (text: string) => Clipboard.setStringAsync(text),
@@ -71,9 +85,21 @@ const MessageItem: FC<MessageItemPropsType> = ({
     []
   );
 
+  const backgroundColor = useMemo(() => {
+    if (isMyMessage) {
+      return colors.lightGreen;
+    }
+
+    if (isReply) {
+      return colors.grey1;
+    }
+
+    return colors.nearlyWhite;
+  }, [isMyMessage, isReply]);
+
   return (
     <Pressable
-      backgroundColor={isMyMessage ? colors.lightGreen : colors.nearlyWhite}
+      backgroundColor={backgroundColor}
       borderRadius={5}
       alignSelf={isMyMessage ? "flex-end" : "flex-start"}
       p={1}
@@ -81,21 +107,37 @@ const MessageItem: FC<MessageItemPropsType> = ({
       _pressed={{ opacity: 0.5 }}
       onLongPress={() => menuRef.current?.open()}
     >
+      {name && (
+        <Text letterSpacing={0.3} fontWeight={600}>
+          {name}
+        </Text>
+      )}
+
+      {replyingToUser && (
+        <MessageItem
+          type="reply"
+          text={replyingTo?.text}
+          name={getUserName(replyingToUser)}
+        />
+      )}
+
       <Text>{text}</Text>
 
-      <HStack alignSelf="flex-end" alignItems="center" space={1}>
-        {isStarred && (
-          <FontAwesome name="star" size={14} color={colors.grey} />
-        )}
-        <Text
-          fontFamily="Quicksand-Regular"
-          letterSpacing={0.3}
-          color={colors.grey}
-          fontSize={12}
-        >
-          {formatAmPm(new Date(date))}
-        </Text>
-      </HStack>
+      {date && (
+        <HStack alignSelf="flex-end" alignItems="center" space={1}>
+          {isStarred && (
+            <FontAwesome name="star" size={14} color={colors.grey} />
+          )}
+          <Text
+            fontFamily="Quicksand-Regular"
+            letterSpacing={0.3}
+            color={colors.grey}
+            fontSize={12}
+          >
+            {formatAmPm(new Date(date))}
+          </Text>
+        </HStack>
+      )}
 
       <Menu ref={menuRef}>
         <MenuTrigger />
@@ -107,15 +149,20 @@ const MessageItem: FC<MessageItemPropsType> = ({
           })}
           {renderMenuItem({
             text: `${isStarred ? "Unstar" : "Star"} message`,
-            onSelect: () => starMessage(messageId, chatId, userId),
+            onSelect: () =>
+              messageId &&
+              chatId &&
+              userId &&
+              starMessage(messageId, chatId, userId),
             icon: isStarred ? "star-o" : "star",
             IconPack: FontAwesome,
           })}
-          {renderMenuItem({
-            text: 'Reply',
-            onSelect: setReply,
-            icon: 'arrow-left-circle',
-          })}
+          {setReply &&
+            renderMenuItem({
+              text: "Reply",
+              onSelect: setReply,
+              icon: "arrow-left-circle",
+            })}
         </MenuOptions>
       </Menu>
     </Pressable>

@@ -18,7 +18,7 @@ import { colors } from "../config/colors";
 import { searchUsers } from "../utils/actions/userActions";
 import { User } from "../types/userTypes";
 import { RootState, useAppDispatch } from "../store/store";
-import { getUserInitials } from "../helpers/userHelpers";
+import { getUserInitials, getUserName } from "../helpers/userHelpers";
 import { setStoredUsers } from "../store/userSlice";
 
 type ChatListPropsTypes = {
@@ -125,7 +125,7 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
             const userData = users[item] as User;
             return (
               <DataItem
-                title={`${userData.firstName} ${userData.lastName}`}
+                title={getUserName(userData)}
                 subTitle={userData.about}
                 image={userData.profilePicture}
                 userId={userData.userId}

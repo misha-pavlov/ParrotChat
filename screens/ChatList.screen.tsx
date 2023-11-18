@@ -10,7 +10,7 @@ import { Divider, FlatList, View } from "native-base";
 import { CustomHeaderButton, DataItem, ScreenTitle } from "../components";
 import { RootState } from "../store/store";
 import { Chat } from "../types/chatTypes";
-import { getUserInitials } from "../helpers/userHelpers";
+import { getUserInitials, getUserName } from "../helpers/userHelpers";
 import { colors } from "../config/colors";
 
 type CustomParamListBase = {
@@ -75,7 +75,7 @@ const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
 
           if (!otherUser) return null;
 
-          const title = `${otherUser.firstName} ${otherUser.lastName}`;
+          const title = getUserName(otherUser);
           const subTitle = item.latestMessageText || 'New chat';
 
           return (

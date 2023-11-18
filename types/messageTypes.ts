@@ -1,7 +1,8 @@
 export type Message = {
     sendBy: string;
-    sentAt: Date;
-    text: string
+    sentAt: string;
+    text: string;
+    replyId?: string;
 }
 
 export type StarredMessages = {
