@@ -3,6 +3,7 @@ import {
   ImageBackground,
   Platform,
   StyleSheet,
+  FlatList as ReactNativeFlatList,
 } from "react-native";
 import {
   FlatList,
@@ -15,7 +16,7 @@ import {
 } from "native-base";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   NavigationProp,
   ParamListBase,
@@ -53,6 +54,7 @@ type ChatPropsTypes = {
 
 const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const params = route?.params as CustomParamListBase;
+  // states
   const [messageText, setMessageText] = useState(INITIAL_VALUE);
   const [chatUsers, setChatUsers] = useState<string[]>([]);
   const [chatId, setChatId] = useState(params?.chatId);
@@ -62,10 +64,11 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   >();
   const [tempImageUri, setTempImageUri] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  // refs
+  const flatListRef = useRef<ReactNativeFlatList>(null);
+  // selectors
   const userChats = useSelector((state: RootState) => state.chats.chatsData);
   const chatData = (chatId && userChats[chatId]) || params?.newChatData;
-
   const storedUsers = useSelector(
     (state: RootState) => state.users.storedUsers
   );
@@ -144,7 +147,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
       console.error(error);
     }
   }, [tempImageUri]);
-  
+
   const takePhoto = useCallback(async () => {
     try {
       const tempUri = await openCamera();
@@ -210,6 +213,14 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
 
           {chatId && userId && (
             <FlatList
+              ref={flatListRef}
+              onContentSizeChange={() =>
+                flatListRef.current &&
+                flatListRef.current.scrollToEnd({ animated: false })
+              }
+              onLayout={() =>
+                flatListRef.current && flatListRef.current.scrollToEnd()
+              }
               data={chatMessages}
               p={4}
               renderItem={({ item }) => {
