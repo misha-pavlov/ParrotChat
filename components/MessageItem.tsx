@@ -1,4 +1,4 @@
-import { HStack, Image, Pressable, Text } from "native-base";
+import { HStack, Image, Pressable, Text, View } from "native-base";
 import { FC, useCallback, useMemo, useRef } from "react";
 import {
   Menu,
@@ -58,7 +58,7 @@ const MessageItem: FC<MessageItemPropsType> = ({
 
   const isMyMessage = type === "myMessage";
   const isReply = type === "reply";
-  const isStarred = messageId
+  const isStarred = messageId && starredMessages
     ? starredMessages[messageId] !== undefined
     : false;
   const replyingToUser = replyingTo && storedUsers[replyingTo.sendBy];
@@ -105,9 +105,9 @@ const MessageItem: FC<MessageItemPropsType> = ({
       borderRadius={5}
       alignSelf={isMyMessage ? "flex-end" : "flex-start"}
       p={1}
-      maxW="90%"
       _pressed={{ opacity: 0.5 }}
       onLongPress={() => menuRef.current?.open()}
+      {...(isReply && { w: "100%" })}
     >
       {name && (
         <Text letterSpacing={0.3} fontWeight={600}>
@@ -116,11 +116,13 @@ const MessageItem: FC<MessageItemPropsType> = ({
       )}
 
       {replyingToUser && (
-        <MessageItem
-          type="reply"
-          text={replyingTo?.text}
-          name={getUserName(replyingToUser)}
-        />
+        <View mb={imageUrl ? 2 : 0}>
+          <MessageItem
+            type="reply"
+            text={replyingTo?.text}
+            name={getUserName(replyingToUser)}
+          />
+        </View>
       )}
 
       {!imageUrl && <Text>{text}</Text>}

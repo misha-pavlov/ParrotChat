@@ -35,6 +35,7 @@ import { Bubble, MessageItem, ReplyTo } from "../components";
 import { getUserName } from "../helpers/userHelpers";
 import {
   launchImagePicker,
+  openCamera,
   uploadImage as uploadImageHelper,
 } from "../utils/imagePickerHelper";
 
@@ -135,6 +136,18 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const pickImage = useCallback(async () => {
     try {
       const tempUri = await launchImagePicker();
+
+      if (!tempUri) return;
+
+      setTempImageUri(tempUri);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [tempImageUri]);
+  
+  const takePhoto = useCallback(async () => {
+    try {
+      const tempUri = await openCamera();
 
       if (!tempUri) return;
 
@@ -275,7 +288,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
               icon={
                 <Feather name="camera" size={24} color={colors.primaryBlue} />
               }
-              onPress={() => console.log("camera")}
+              onPress={takePhoto}
             />
           ) : (
             <IconButton

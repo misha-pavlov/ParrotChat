@@ -37,6 +37,26 @@ export const launchImagePicker = async () => {
   }
 };
 
+export const openCamera = async () => {
+  const permissionReult = await ImagePicker.requestCameraPermissionsAsync();
+
+  if (!permissionReult.granted) {
+    console.log('No permission to access the camera');
+    return
+  }
+
+  const result = await ImagePicker.launchCameraAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+  });
+
+  if (!result.canceled) {
+    return result.assets[0].uri;
+  }
+};
+
 export const uploadImage = async (uri: string, isChatImage = false) => {
   const app = getFirebaseApp();
   const blob: Blob = await new Promise((resolve, reject) => {
