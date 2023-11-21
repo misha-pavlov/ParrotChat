@@ -1,11 +1,16 @@
-import { ImageBackground, Platform, StyleSheet } from "react-native";
+import {
+  ActivityIndicator,
+  ImageBackground,
+  Platform,
+  StyleSheet,
+} from "react-native";
 import {
   FlatList,
   HStack,
   IconButton,
+  Image,
   Input,
   KeyboardAvoidingView,
-  Text,
   View,
 } from "native-base";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,12 +22,21 @@ import {
   RouteProp,
 } from "@react-navigation/native";
 import { useSelector } from "react-redux";
+import AwesomeAlert from "react-native-awesome-alerts";
 import backgroundImage from "../assets/images/droplet.jpeg";
 import { colors } from "../config/colors";
 import { RootState } from "../store/store";
-import { createChat, sendTextMessage } from "../utils/actions/chatActions";
+import {
+  createChat,
+  sendImageMessage,
+  sendTextMessage,
+} from "../utils/actions/chatActions";
 import { Bubble, MessageItem, ReplyTo } from "../components";
 import { getUserName } from "../helpers/userHelpers";
+import {
+  launchImagePicker,
+  uploadImage as uploadImageHelper,
+} from "../utils/imagePickerHelper";
 
 const INITIAL_VALUE = "";
 
@@ -45,6 +59,8 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const [replyingTo, setReplyingTo] = useState<
     { text: string; sentBy: string; key: string } | undefined
   >();
+  const [tempImageUri, setTempImageUri] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const userChats = useSelector((state: RootState) => state.chats.chatsData);
   const chatData = (chatId && userChats[chatId]) || params?.newChatData;
@@ -116,6 +132,48 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
     }
   }, [messageText, chatId, params, userData, replyingTo]);
 
+  const pickImage = useCallback(async () => {
+    try {
+      const tempUri = await launchImagePicker();
+
+      if (!tempUri) return;
+
+      setTempImageUri(tempUri);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [tempImageUri]);
+
+  const uploadImage = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      let id = chatId;
+      const userId = userData?.userId;
+
+      if (!id) {
+        // no chat id create the chat
+        if (userId) {
+          id = await createChat(userId, params.newChatData);
+          setChatId(id);
+        }
+      }
+
+      const uploadUrl = await uploadImageHelper(tempImageUri, true);
+      setIsLoading(false);
+
+      if (id && userId) {
+        await sendImageMessage(id, userId, uploadUrl, replyingTo?.key);
+      }
+
+      setReplyingTo(undefined);
+      setTimeout(() => setTempImageUri(""), 500);
+    } catch (error) {
+      setIsLoading(false);
+      console.error(error);
+    }
+  }, [tempImageUri, isLoading, chatId, userId, replyingTo]);
+
   return (
     <SafeAreaView
       edges={["right", "left", "bottom"]}
@@ -146,29 +204,37 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
                 const isOwnMessage = message.sendBy === userId;
                 const messageType = isOwnMessage ? "myMessage" : "theirMessage";
                 return (
-                  <MessageItem
-                    text={message.text}
-                    type={messageType}
-                    messageId={message.key}
-                    userId={userId}
-                    chatId={chatId}
-                    date={message.sentAt}
-                    replyingTo={
-                      message?.replyId
-                        ? chatMessages.find((i) => i.key === message.replyId)
-                        : undefined
+                  <View
+                    mb={
+                      chatMessages[chatMessages.length - 1].key === message.key
+                        ? 5
+                        : 2
                     }
-                    setReply={() =>
-                      setReplyingTo({
-                        key: message.key,
-                        text: message.text,
-                        sentBy: message.sendBy,
-                      })
-                    }
-                  />
+                  >
+                    <MessageItem
+                      text={message.text}
+                      type={messageType}
+                      messageId={message.key}
+                      userId={userId}
+                      chatId={chatId}
+                      date={message.sentAt}
+                      imageUrl={message?.imageUrl}
+                      replyingTo={
+                        message?.replyId
+                          ? chatMessages.find((i) => i.key === message.replyId)
+                          : undefined
+                      }
+                      setReply={() =>
+                        setReplyingTo({
+                          key: message.key,
+                          text: message.text,
+                          sentBy: message.sendBy,
+                        })
+                      }
+                    />
+                  </View>
                 );
               }}
-              ItemSeparatorComponent={() => <View mt={2} />}
             />
           )}
 
@@ -189,7 +255,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
         >
           <IconButton
             icon={<Feather name="plus" size={24} color={colors.primaryBlue} />}
-            onPress={() => console.log("image")}
+            onPress={pickImage}
           />
 
           <Input
@@ -224,6 +290,38 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
           )}
         </HStack>
       </KeyboardAvoidingView>
+
+      <AwesomeAlert
+        show={tempImageUri !== ""}
+        title="Send image?"
+        closeOnTouchOutside
+        closeOnHardwareBackPress={false}
+        showCancelButton
+        showConfirmButton
+        cancelText="Cancel"
+        confirmText="Send image"
+        confirmButtonColor={colors.primaryGreen}
+        cancelButtonColor={colors.red}
+        titleStyle={styles.popupTitleStyle}
+        onCancelPressed={() => setTempImageUri("")}
+        onConfirmPressed={uploadImage}
+        onDismiss={() => setTempImageUri("")}
+        customView={
+          <View>
+            {isLoading && (
+              <ActivityIndicator size="small" color={colors.primaryGreen} />
+            )}
+            {!isLoading && tempImageUri !== "" && (
+              <Image
+                w={200}
+                h={200}
+                alt="Selected image"
+                source={{ uri: tempImageUri }}
+              />
+            )}
+          </View>
+        }
+      />
     </SafeAreaView>
   );
 };
@@ -238,6 +336,11 @@ const styles = StyleSheet.create({
   },
   _pressed: {
     opacity: 0.5,
+  },
+  popupTitleStyle: {
+    fontFamily: "Quicksand-Medium",
+    letterSpacing: 0.3,
+    color: colors.textColor,
   },
 });
 

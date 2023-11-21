@@ -3,6 +3,7 @@ export type Message = {
     sentAt: string;
     text: string;
     replyId?: string;
+    imageUrl?: string;
 }
 
 export type StarredMessages = {

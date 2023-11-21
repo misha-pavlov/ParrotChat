@@ -1,4 +1,4 @@
-import { HStack, Pressable, Text } from "native-base";
+import { HStack, Image, Pressable, Text } from "native-base";
 import { FC, useCallback, useMemo, useRef } from "react";
 import {
   Menu,
@@ -26,6 +26,7 @@ type MessageItemPropsType = {
   userId?: string;
   chatId?: string;
   date?: string;
+  imageUrl?: string;
 };
 
 type MenuItemParams = {
@@ -45,6 +46,7 @@ const MessageItem: FC<MessageItemPropsType> = ({
   setReply,
   replyingTo,
   name,
+  imageUrl,
 }) => {
   const menuRef = useRef<Menu>(null);
   const starredMessages = useSelector((state: RootState) =>
@@ -121,7 +123,17 @@ const MessageItem: FC<MessageItemPropsType> = ({
         />
       )}
 
-      <Text>{text}</Text>
+      {!imageUrl && <Text>{text}</Text>}
+
+      {imageUrl && (
+        <Image
+          source={{ uri: imageUrl }}
+          w={300}
+          h={300}
+          mb={1}
+          alt="Attached image"
+        />
+      )}
 
       {date && (
         <HStack alignSelf="flex-end" alignItems="center" space={1}>
