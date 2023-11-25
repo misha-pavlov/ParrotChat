@@ -15,6 +15,8 @@ import { colors } from "../config/colors";
 
 type CustomParamListBase = {
   selectedUserId?: string;
+  chatName?: string;
+  selectedUsers?: string[];
 };
 
 type ChatListPropsTypes = {
@@ -24,6 +26,9 @@ type ChatListPropsTypes = {
 
 const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   const selectedUserId = (route?.params as CustomParamListBase)?.selectedUserId;
+  const selectedUsers = (route?.params as CustomParamListBase)?.selectedUsers;
+  const chatName = (route?.params as CustomParamListBase)?.chatName;
+
   const userData = useSelector((state: RootState) => state.auth.userData);
   const userChats = useSelector((state: RootState) =>
     Object.values(state.chats.chatsData).sort(
@@ -49,14 +54,43 @@ const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    if (!selectedUserId) {
+    if (!selectedUserId && !selectedUsers) {
       return;
     }
 
-    const chatUsers = [selectedUserId, userData?.userId];
-    const navigationProps = { newChatData: { users: chatUsers } };
+    let chatData;
+    let navigationProps;
+
+    if (selectedUserId) {
+      chatData = userChats.find(
+        (uc) => !uc.isGroupChat && uc.users.includes(selectedUserId)
+      );
+    }
+
+    if (chatData) {
+      navigationProps = { chatId: chatData.key };
+    } else {
+      const chatUsers = selectedUsers || [selectedUserId];
+
+      if (!chatUsers.includes(userData?.userId)) {
+        chatUsers.push(userData?.userId);
+      }
+
+      navigationProps = {
+        newChatData: {
+          users: chatUsers,
+          isGroupChat: !!selectedUsers,
+          chatName,
+        },
+      };
+
+      if (chatName) {
+        navigationProps.newChatData.chatName = chatName;
+      }
+    }
+
     navigation.navigate("Chat", navigationProps);
-  }, [selectedUserId, navigation, userData, route]);
+  }, [selectedUserId, navigation, userData, route, selectedUsers, chatName]);
 
   return (
     <View px="20px" backgroundColor={colors.white} flex={1}>
@@ -82,18 +116,21 @@ const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
           ) as string;
           const otherUser = storedUsers[otherUserId];
           const chatId = item.key;
+          const isGroupChat = item?.isGroupChat;
 
           if (!otherUser) return null;
 
-          const title = getUserName(otherUser);
+          const title = isGroupChat ? item?.chatName : getUserName(otherUser);
           const subTitle = item.latestMessageText || "New chat";
 
           return (
             <DataItem
-              title={title}
+              title={title || ""}
               userId={otherUser.userId}
               subTitle={subTitle}
-              userInitials={getUserInitials(otherUser)}
+              userInitials={
+                isGroupChat ? undefined : getUserInitials(otherUser)
+              }
               image={otherUser.profilePicture}
               onPress={() => navigation.navigate("Chat", { chatId })}
             />

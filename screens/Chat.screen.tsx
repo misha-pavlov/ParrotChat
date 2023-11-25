@@ -43,7 +43,7 @@ import {
 const INITIAL_VALUE = "";
 
 type CustomParamListBase = {
-  newChatData: { users: string[] };
+  newChatData: { users: string[]; chatName?: string; isGroupChat?: boolean };
   chatId?: string;
 };
 
@@ -88,6 +88,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
 
     return messagesList;
   });
+
   const userId = userData?.userId;
 
   const getChatTitleFromName = useMemo(() => {
@@ -99,13 +100,15 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
     return getUserName(otherUserData);
   }, [userData, storedUsers, chatData]);
 
+  const headerTitle = chatData.chatName ?? getChatTitleFromName;
+
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: getChatTitleFromName,
+      headerTitle,
     });
 
     setChatUsers(chatData.users);
-  }, [chatData, getChatTitleFromName, navigation]);
+  }, [chatData, headerTitle, navigation]);
 
   const onChangeText = useCallback((value: string) => {
     setMessageText(value);
@@ -124,8 +127,8 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
         }
       }
 
-      if (chatId && userId) {
-        await sendTextMessage(chatId, userId, messageText, replyingTo?.key);
+      if (id && userId) {
+        await sendTextMessage(id, userId, messageText, replyingTo?.key);
       }
       setMessageText(INITIAL_VALUE);
       setReplyingTo(undefined);
@@ -227,6 +230,8 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
                 const message = item;
                 const isOwnMessage = message.sendBy === userId;
                 const messageType = isOwnMessage ? "myMessage" : "theirMessage";
+                const sender = message.sendBy && storedUsers[message.sendBy];
+                const name = sender && getUserName(sender);
                 return (
                   <View
                     mb={
@@ -254,6 +259,11 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
                           text: message.text,
                           sentBy: message.sendBy,
                         })
+                      }
+                      name={
+                        !chatData?.isGroupChat || isOwnMessage
+                          ? undefined
+                          : name
                       }
                     />
                   </View>

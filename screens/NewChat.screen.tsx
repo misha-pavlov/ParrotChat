@@ -70,13 +70,16 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation, route }) => {
               title="Create"
               disabled={isGroupChatDisabled}
               color={isGroupChatDisabled ? colors.lightGrey : undefined}
+              onPress={() =>
+                navigation.navigate("ChatList", { selectedUsers, chatName })
+              }
             />
           )}
         </HeaderButtons>
       ),
       headerTitle: isGroupChat ? "Add Participants" : "New Chat",
     });
-  }, [isGroupChatDisabled]);
+  }, [selectedUsers, chatName]);
 
   useEffect(() => {
     const delaySearch = setTimeout(async () => {

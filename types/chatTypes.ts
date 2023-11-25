@@ -6,4 +6,6 @@ export type Chat = {
   updatedBy: string;
   latestMessageText: string;
   users: string[];
+  isGroupChat?: boolean;
+  chatName?: string;
 };

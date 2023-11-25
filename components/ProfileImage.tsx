@@ -73,7 +73,9 @@ const ProfileImage: FC<ProfileImagePropsTypes> = ({
           }}
           size={size}
         >
-          {userInitials || "image"}
+          {userInitials || (
+            <FontAwesome name="group" size={24} color={colors.white} />
+          )}
           {showEditButton && (
             <Avatar.Badge
               bg={colors.lightGrey}
