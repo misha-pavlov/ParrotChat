@@ -3,7 +3,7 @@ import {
   ParamListBase,
   RouteProp,
 } from "@react-navigation/native";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -12,12 +12,16 @@ import {
   Center,
   FlatList,
   Divider,
+  Pressable,
 } from "native-base";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import { FontAwesome } from "@expo/vector-icons";
-import { ActivityIndicator } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList as ReactNativeFlatList,
+} from "react-native";
 import { useSelector } from "react-redux";
-import { CustomHeaderButton, DataItem } from "../components";
+import { CustomHeaderButton, DataItem, ProfileImage } from "../components";
 import { colors } from "../config/colors";
 import { searchUsers } from "../utils/actions/userActions";
 import { User } from "../types/userTypes";
@@ -36,10 +40,17 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [noResultFound, setNoResultFound] = useState(false);
   const [chatName, setChatName] = useState("");
+  const [selectedUsers, setSelectedUSers] = useState<string[]>([]);
+
   const userAppData = useSelector((state: RootState) => state.auth.userData);
+  const storredUsers = useSelector(
+    (state: RootState) => state.users.storedUsers
+  );
   const dispatch = useAppDispatch();
+  const selectedUsersFlatListRef = useRef<ReactNativeFlatList>(null);
+
   const isGroupChat = route.params?.isGroupChat;
-  const isGroupChatDisabled = chatName === "";
+  const isGroupChatDisabled = chatName === "" || !selectedUsers.length;
 
   useEffect(() => {
     navigation.setOptions({
@@ -98,32 +109,75 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation, route }) => {
     return () => clearTimeout(delaySearch);
   }, [searchTerm, userAppData, dispatch, setStoredUsers]);
 
-  const userPressed = useCallback((userId: string) => {
-    navigation.navigate("ChatList", { selectedUserId: userId });
-  }, []);
+  const userPressed = useCallback(
+    (userId: string) => {
+      if (isGroupChat) {
+        const newSelectedUsers = selectedUsers.includes(userId)
+          ? selectedUsers.filter((id) => id !== userId)
+          : selectedUsers.concat(userId);
+        setSelectedUSers(newSelectedUsers);
+      } else {
+        navigation.navigate("ChatList", { selectedUserId: userId });
+      }
+    },
+    [isGroupChat, selectedUsers]
+  );
 
   return (
     <View mx={4}>
       {isGroupChat && (
-        <View py={2}>
-          <View w="100%" flexDirection="row" borderRadius={2}>
-            <Input
-              placeholder="Enter a name for your chat"
-              autoCorrect={false}
-              autoComplete={undefined}
-              color={colors.textColor}
-              w="100%"
-              fontFamily="Quicksand-Regular"
-              letterSpacing={0.3}
-              borderColor={colors.extraLightGrey}
-              onChangeText={(text) => setChatName(text)}
-              _focus={{
-                borderColor: colors.extraLightGrey,
-                backgroundColor: colors.extraLightGrey,
+        <>
+          <View py={2}>
+            <View w="100%" flexDirection="row" borderRadius={2}>
+              <Input
+                placeholder="Enter a name for your chat"
+                autoCorrect={false}
+                autoComplete={undefined}
+                color={colors.textColor}
+                w="100%"
+                fontFamily="Quicksand-Regular"
+                letterSpacing={0.3}
+                borderColor={colors.extraLightGrey}
+                onChangeText={(text) => setChatName(text)}
+                _focus={{
+                  borderColor: colors.extraLightGrey,
+                  backgroundColor: colors.extraLightGrey,
+                }}
+              />
+            </View>
+          </View>
+
+          <View>
+            <FlatList
+              ref={selectedUsersFlatListRef}
+              data={selectedUsers}
+              horizontal
+              keyExtractor={(item) => item}
+              onContentSizeChange={() =>
+                selectedUsersFlatListRef.current?.scrollToEnd()
+              }
+              ItemSeparatorComponent={() => <View ml={2} />}
+              renderItem={({ item }) => {
+                const userData = storredUsers[item];
+                return (
+                  <Pressable
+                    _pressed={{ opacity: 0.5 }}
+                    onPress={() => userPressed(item)}
+                  >
+                    <ProfileImage
+                      size="md"
+                      userId={item}
+                      uri={userData?.profilePicture}
+                      userInitials={getUserInitials(userData)}
+                      showEditButton={false}
+                      showRemoveButton
+                    />
+                  </Pressable>
+                );
               }}
             />
           </View>
-        </View>
+        </>
       )}
 
       <HStack
@@ -172,6 +226,8 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation, route }) => {
                 userId={userData.userId}
                 userInitials={getUserInitials(userData)}
                 onPress={() => userPressed(userData.userId)}
+                type={isGroupChat ? "checkbox" : undefined}
+                isChecked={selectedUsers.includes(item)}
               />
             );
           }}

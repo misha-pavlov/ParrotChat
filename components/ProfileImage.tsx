@@ -15,6 +15,7 @@ type ProfileImagePropsTypes = {
   size: ThemeComponentSizeType<"Avatar">;
   uri?: string;
   showEditButton?: boolean;
+  showRemoveButton?: boolean;
 };
 
 const ProfileImage: FC<ProfileImagePropsTypes> = ({
@@ -23,6 +24,7 @@ const ProfileImage: FC<ProfileImagePropsTypes> = ({
   size,
   uri,
   showEditButton = true,
+  showRemoveButton = false,
 }) => {
   const [image, setImage] = useState(uri);
   const [isLoading, setIsLoading] = useState(false);
@@ -81,6 +83,17 @@ const ProfileImage: FC<ProfileImagePropsTypes> = ({
               justifyContent="center"
             >
               <FontAwesome name="pencil" size={15} color="black" />
+            </Avatar.Badge>
+          )}
+          {showRemoveButton && (
+            <Avatar.Badge
+              bg={colors.red}
+              borderWidth={1}
+              borderColor={colors.red}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <FontAwesome name="close" size={12} color={colors.white} />
             </Avatar.Badge>
           )}
         </Avatar>

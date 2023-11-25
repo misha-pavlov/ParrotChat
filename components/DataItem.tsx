@@ -1,5 +1,6 @@
-import { HStack, Pressable, VStack, Text } from "native-base";
+import { HStack, Pressable, VStack, Text, View } from "native-base";
 import { FC } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import ProfileImage from "./ProfileImage";
 import { colors } from "../config/colors";
 
@@ -10,6 +11,8 @@ type DataItemPropsType = {
   onPress: VoidFunction;
   image?: string;
   userInitials?: string;
+  type?: "checkbox";
+  isChecked?: boolean;
 };
 
 const DataItem: FC<DataItemPropsType> = ({
@@ -19,6 +22,8 @@ const DataItem: FC<DataItemPropsType> = ({
   onPress,
   subTitle,
   userInitials,
+  type,
+  isChecked,
 }) => {
   return (
     <Pressable onPress={onPress}>
@@ -31,7 +36,7 @@ const DataItem: FC<DataItemPropsType> = ({
           userInitials={userInitials}
         />
 
-        <VStack>
+        <VStack flex={1}>
           <Text
             numberOfLines={1}
             fontFamily="Quicksand-Medium"
@@ -49,6 +54,17 @@ const DataItem: FC<DataItemPropsType> = ({
             {subTitle}
           </Text>
         </VStack>
+
+        {type === "checkbox" && (
+          <View
+            borderWidth={1}
+            borderRadius={50}
+            borderColor={isChecked ? "transparent" : colors.lightGrey}
+            backgroundColor={isChecked ? colors.primaryGreen : colors.white}
+          >
+            <Ionicons name="checkmark" size={18} color={colors.white} />
+          </View>
+        )}
       </HStack>
     </Pressable>
   );
