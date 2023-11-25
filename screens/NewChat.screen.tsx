@@ -1,5 +1,9 @@
-import { NavigationProp, ParamListBase } from "@react-navigation/native";
-import { FC, useCallback, useEffect, useLayoutEffect, useState } from "react";
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from "@react-navigation/native";
+import { FC, useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -23,17 +27,21 @@ import { setStoredUsers } from "../store/userSlice";
 
 type ChatListPropsTypes = {
   navigation: NavigationProp<ParamListBase>;
+  route: RouteProp<{ params: { isGroupChat?: boolean } }>;
 };
 
-const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
+const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   const [users, setUsers] = useState();
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [noResultFound, setNoResultFound] = useState(false);
+  const [chatName, setChatName] = useState("");
   const userAppData = useSelector((state: RootState) => state.auth.userData);
   const dispatch = useAppDispatch();
+  const isGroupChat = route.params?.isGroupChat;
+  const isGroupChatDisabled = chatName === "";
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
         <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
@@ -44,9 +52,20 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
           />
         </HeaderButtons>
       ),
-      headeTitle: "New Chat",
+      headerRight: () => (
+        <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+          {isGroupChat && (
+            <Item
+              title="Create"
+              disabled={isGroupChatDisabled}
+              color={isGroupChatDisabled ? colors.lightGrey : undefined}
+            />
+          )}
+        </HeaderButtons>
+      ),
+      headerTitle: isGroupChat ? "Add Participants" : "New Chat",
     });
-  }, []);
+  }, [isGroupChatDisabled]);
 
   useEffect(() => {
     const delaySearch = setTimeout(async () => {
@@ -85,6 +104,28 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation }) => {
 
   return (
     <View mx={4}>
+      {isGroupChat && (
+        <View py={2}>
+          <View w="100%" flexDirection="row" borderRadius={2}>
+            <Input
+              placeholder="Enter a name for your chat"
+              autoCorrect={false}
+              autoComplete={undefined}
+              color={colors.textColor}
+              w="100%"
+              fontFamily="Quicksand-Regular"
+              letterSpacing={0.3}
+              borderColor={colors.extraLightGrey}
+              onChangeText={(text) => setChatName(text)}
+              _focus={{
+                borderColor: colors.extraLightGrey,
+                backgroundColor: colors.extraLightGrey,
+              }}
+            />
+          </View>
+        </View>
+      )}
+
       <HStack
         backgroundColor={colors.extraLightGrey}
         alignItems="center"

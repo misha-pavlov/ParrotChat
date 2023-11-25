@@ -6,7 +6,7 @@ import {
 import { FC, useEffect, useLayoutEffect } from "react";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import { useSelector } from "react-redux";
-import { Divider, FlatList, View } from "native-base";
+import { Divider, FlatList, Pressable, View, Text } from "native-base";
 import { CustomHeaderButton, DataItem, ScreenTitle } from "../components";
 import { RootState } from "../store/store";
 import { Chat } from "../types/chatTypes";
@@ -61,6 +61,16 @@ const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   return (
     <View px="20px" backgroundColor={colors.white} flex={1}>
       <ScreenTitle text="Chats" />
+
+      <Pressable
+        _pressed={{ opacity: 0.5 }}
+        onPress={() => navigation.navigate("NewChat", { isGroupChat: true })}
+      >
+        <Text color={colors.primaryBlue} fontSize={17} mb={1}>
+          New group
+        </Text>
+      </Pressable>
+
       <FlatList
         data={userChats}
         ItemSeparatorComponent={() => (
@@ -76,7 +86,7 @@ const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
           if (!otherUser) return null;
 
           const title = getUserName(otherUser);
-          const subTitle = item.latestMessageText || 'New chat';
+          const subTitle = item.latestMessageText || "New chat";
 
           return (
             <DataItem
