@@ -3,7 +3,7 @@ import { colors } from "../config/colors";
 
 const ScreenTitle = ({ text }: { text: string }) => {
   return (
-    <View mt="10px" backgroundColor={colors.white}>
+    <View mt="10px">
       <Text
         fontSize={28}
         color={colors.textColor}

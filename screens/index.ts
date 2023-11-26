@@ -4,3 +4,5 @@ export { default as Settings } from "./Settings.screen";
 export { default as Chat } from "./Chat.screen";
 export { default as Auth } from "./Auth.screen";
 export { default as StartUp } from "./StartUp.screen";
+export { default as Contact } from "./Contact.screen";
+export { default as NewChat } from "./NewChat.screen";

@@ -5,8 +5,14 @@ import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import { ActivityIndicator } from "react-native";
-import { Chat, ChatList, ChatSettings, Settings } from "../screens";
-import NewChatScreen from "../screens/NewChat.screen";
+import {
+  Chat,
+  ChatList,
+  ChatSettings,
+  Contact,
+  NewChat,
+  Settings,
+} from "../screens";
 import { RootState, useAppDispatch } from "../store/store";
 import { getFirebaseApp } from "../utils/firebaseHelper";
 import { Chat as ChatType } from "../types/chatTypes";
@@ -71,10 +77,18 @@ const StackNavigator = () => (
           headerBackTitle: "Back",
         }}
       />
+      <Stack.Screen
+        name="Contact"
+        component={Contact}
+        options={{
+          headerTitle: "Contact info",
+          headerBackTitle: "Back",
+        }}
+      />
     </Stack.Group>
 
     <Stack.Group screenOptions={{ presentation: "modal" }}>
-      <Stack.Screen name="NewChat" component={NewChatScreen} />
+      <Stack.Screen name="NewChat" component={NewChat} />
     </Stack.Group>
   </Stack.Navigator>
 );

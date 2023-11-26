@@ -8,10 +8,10 @@ type DataItemPropsType = {
   userId: string;
   title: string;
   subTitle: string;
-  onPress: VoidFunction;
+  onPress?: VoidFunction;
   image?: string;
   userInitials?: string;
-  type?: "checkbox";
+  type?: "checkbox" | "link";
   isChecked?: boolean;
 };
 
@@ -26,7 +26,7 @@ const DataItem: FC<DataItemPropsType> = ({
   isChecked,
 }) => {
   return (
-    <Pressable onPress={onPress}>
+    <Pressable onPress={onPress} disabled={!onPress}>
       <HStack alignItems="center" space={4}>
         <ProfileImage
           size="md"
@@ -63,6 +63,16 @@ const DataItem: FC<DataItemPropsType> = ({
             backgroundColor={isChecked ? colors.primaryGreen : colors.white}
           >
             <Ionicons name="checkmark" size={18} color={colors.white} />
+          </View>
+        )}
+
+        {type === "link" && (
+          <View>
+            <Ionicons
+              name="chevron-forward-outline"
+              size={18}
+              color={colors.grey}
+            />
           </View>
         )}
       </HStack>

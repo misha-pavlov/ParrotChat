@@ -29,12 +29,16 @@ import { RootState, useAppDispatch } from "../store/store";
 import { getUserInitials, getUserName } from "../helpers/userHelpers";
 import { setStoredUsers } from "../store/userSlice";
 
-type ChatListPropsTypes = {
-  navigation: NavigationProp<ParamListBase>;
-  route: RouteProp<{ params: { isGroupChat?: boolean } }>;
+type CustomParamListBase = {
+  isGroupChat?: boolean;
 };
 
-const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation, route }) => {
+type NewChatPropsTypes = {
+  navigation: NavigationProp<ParamListBase>;
+  route: RouteProp<ParamListBase>;
+};
+
+const NewChat: FC<NewChatPropsTypes> = ({ navigation, route }) => {
   const [users, setUsers] = useState();
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +53,7 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   const dispatch = useAppDispatch();
   const selectedUsersFlatListRef = useRef<ReactNativeFlatList>(null);
 
-  const isGroupChat = route.params?.isGroupChat;
+  const isGroupChat = (route.params as CustomParamListBase)?.isGroupChat;
   const isGroupChatDisabled = chatName === "" || !selectedUsers.length;
 
   useEffect(() => {
@@ -266,4 +270,4 @@ const NewChatScreen: FC<ChatListPropsTypes> = ({ navigation, route }) => {
   );
 };
 
-export default NewChatScreen;
+export default NewChat;

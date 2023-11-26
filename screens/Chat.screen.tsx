@@ -24,6 +24,7 @@ import {
 } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import AwesomeAlert from "react-native-awesome-alerts";
+import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import backgroundImage from "../assets/images/droplet.jpeg";
 import { colors } from "../config/colors";
 import { RootState } from "../store/store";
@@ -32,7 +33,12 @@ import {
   sendImageMessage,
   sendTextMessage,
 } from "../utils/actions/chatActions";
-import { Bubble, MessageItem, ReplyTo } from "../components";
+import {
+  Bubble,
+  CustomHeaderButton,
+  MessageItem,
+  ReplyTo,
+} from "../components";
 import { getUserName } from "../helpers/userHelpers";
 import {
   launchImagePicker,
@@ -105,6 +111,25 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   useEffect(() => {
     navigation.setOptions({
       headerTitle,
+      headerRight: () => (
+        <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+          {chatId && (
+            <Item
+              title="Chat  settings"
+              iconName="settings-outline"
+              onPress={() =>
+                chatData?.isGroupChat
+                  ? navigation.navigate("")
+                  : navigation.navigate("Contact", {
+                      uid: chatData.users.find(
+                        (uid) => uid !== userData?.userId
+                      ),
+                    })
+              }
+            />
+          )}
+        </HeaderButtons>
+      ),
     });
 
     setChatUsers(chatData.users);
