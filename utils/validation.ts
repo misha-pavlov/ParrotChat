@@ -34,3 +34,24 @@ export const loginValidation = (inputId: string, inputValue: string) => {
   const res = validate({ [inputId]: inputValue }, { [inputId]: constrains });
   return res && res[inputId];
 };
+
+export const validateLength = (inputId: string, inputValue: string, min?: number, max?: number, allowEmpty?: boolean) => {
+  const constrains: any = {
+    presence: { allowEmpty },
+  };
+
+  if (!allowEmpty || inputValue !== '') {
+    constrains.length = {}
+
+    if (min) {
+      constrains.length.minimum = min
+    }
+
+    if (max) {
+      constrains.length.maximum = max
+    }
+  }
+
+  const res = validate({ [inputId]: inputValue }, { [inputId]: constrains });
+  return res && res[inputId];
+}
