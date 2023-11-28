@@ -1,29 +1,53 @@
-import { ParamListBase, RouteProp } from "@react-navigation/native";
-import { FC, useCallback, useMemo, useReducer, useState } from "react";
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from "@react-navigation/native";
+import {
+  FC,
+  Fragment,
+  useCallback,
+  useMemo,
+  useReducer,
+  useState,
+} from "react";
 import { useSelector } from "react-redux";
-import { Button, Center, ScrollView, View, useToast } from "native-base";
+import {
+  Button,
+  Center,
+  Divider,
+  ScrollView,
+  Text,
+  View,
+  useToast,
+} from "native-base";
 import { ActivityIndicator } from "react-native";
 import { RootState } from "../store/store";
-import { LoginInput, ProfileImage, ScreenTitle } from "../components";
+import { DataItem, LoginInput, ProfileImage, ScreenTitle } from "../components";
 import { colors } from "../config/colors";
 import { settingsReducer } from "../utils/reducers/settingsReducer";
 import { validateLength } from "../utils/validation";
 import { updateChatData } from "../utils/actions/chatActions";
+import { getUserName } from "../helpers/userHelpers";
 
 type CustomParamListBase = {
   chatId: string;
 };
 
 type ChatSettingsPropsTypes = {
+  navigation: NavigationProp<ParamListBase>;
   route: RouteProp<ParamListBase>;
 };
 
-const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route }) => {
+const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
   const chatId = (route?.params as CustomParamListBase).chatId;
   const chatData = useSelector(
     (state: RootState) => state.chats.chatsData[chatId]
   );
   const userData = useSelector((state: RootState) => state.auth.userData);
+  const storredUsers = useSelector(
+    (state: RootState) => state.users.storedUsers
+  );
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,7 +70,13 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route }) => {
 
   const onChange = useCallback(
     (inputId: string, inputValue: string) => {
-      const validationResult = validateLength(inputId, inputValue, 5, 50, false);
+      const validationResult = validateLength(
+        inputId,
+        inputValue,
+        5,
+        50,
+        false
+      );
       dispatchFormState({ inputId, validationResult, inputValue });
     },
     [dispatchFormState]
@@ -97,8 +127,59 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route }) => {
           autoCapitalize="none"
           defaultValue={chatData?.chatName}
           onChange={onChange}
-          errorText={formState.inputValidities['chatName']}
+          errorText={formState.inputValidities["chatName"]}
         />
+
+        <View width="100%" mt="10px">
+          <Text
+            my={2}
+            color={colors.textColor}
+            fontFamily="Quicksand-Bold"
+            letterSpacing={0.3}
+          >
+            {chatData.users.length} Participants
+          </Text>
+
+          {userData?.userId && (
+            <DataItem
+              title="Add users"
+              icon="plus"
+              userId={userData?.userId}
+              type="button"
+            />
+          )}
+
+          <Divider h="1px" backgroundColor={colors.lightGrey} mt={2} mb={2} />
+
+          {chatData.users.map((uid, index, array) => {
+            const currentUser = storredUsers[uid];
+            const isMe = uid === userData?.userId;
+            return (
+              <Fragment key={uid}>
+                <DataItem
+                  image={currentUser?.profilePicture}
+                  title={getUserName(currentUser)}
+                  subTitle={currentUser.about}
+                  type={!isMe ? "link" : undefined}
+                  userId={uid}
+                  onPress={
+                    !isMe
+                      ? () => navigation.navigate("Contact", { uid })
+                      : undefined
+                  }
+                />
+                {index !== array.length - 1 && (
+                  <Divider
+                    h="1px"
+                    backgroundColor={colors.lightGrey}
+                    mt={2}
+                    mb={2}
+                  />
+                )}
+              </Fragment>
+            );
+          })}
+        </View>
 
         {isLoading ? (
           <ActivityIndicator size="small" color={colors.primaryGreen} />
