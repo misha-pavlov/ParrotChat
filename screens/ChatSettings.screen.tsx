@@ -75,7 +75,7 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route }) => {
   const hasChanges = useMemo(() => {
     const currentValues = formState.inputValues;
     return currentValues.chatName !== chatData?.chatName;
-  }, [formState]);
+  }, [formState, chatData]);
 
   return (
     <View px="20px" backgroundColor={colors.white} flex={1}>
