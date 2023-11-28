@@ -8,4 +8,9 @@ export type Chat = {
   users: string[];
   isGroupChat?: boolean;
   chatName?: string;
+  chatImage?: string;
 };
+
+export type UpdateChatData = {
+  chatImage?: string;
+}

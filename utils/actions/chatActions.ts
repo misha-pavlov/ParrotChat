@@ -9,7 +9,7 @@ import {
   update,
 } from "firebase/database";
 import { getFirebaseApp } from "../firebaseHelper";
-import { Chat } from "../../types/chatTypes";
+import { Chat, UpdateChatData } from "../../types/chatTypes";
 import { Message } from "../../types/messageTypes";
 
 export const createChat = async (userId: string, chatData: Pick<Chat, 'users'>) => {
@@ -86,4 +86,16 @@ const sendMessage = async (chatId: string, senderId: string, messageText: string
 
   const chatRef = child(dbRef, `chats/${chatId}`);
   await update(chatRef, { updatedBy: senderId, updatedAt: new Date().toISOString(), latestMessageText: messageText })
+}
+
+export const updateChatData = async (chatId: string, userId: string, chatData: UpdateChatData) => {
+  const app = getFirebaseApp();
+  const dbRef = ref(getDatabase(app));
+  const chatRef = child(dbRef, `chats/${chatId}`);
+
+  await update(chatRef, {
+    ...chatData,
+    updatedAt: new Date().toISOString(),
+    updatedBy: userId
+  })
 }

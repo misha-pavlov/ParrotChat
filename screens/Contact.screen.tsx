@@ -90,6 +90,7 @@ const Contact: FC<ContactPropsTypes> = ({ route, navigation }) => {
             return (
               <DataItem
                 type="link"
+                image={chatData?.chatImage}
                 key={chatData.key}
                 userId={currentUser.userId}
                 title={chatData?.chatName || ""}

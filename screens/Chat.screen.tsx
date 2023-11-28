@@ -115,11 +115,11 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
         <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
           {chatId && (
             <Item
-              title="Chat  settings"
+              title="Chat settings"
               iconName="settings-outline"
               onPress={() =>
                 chatData?.isGroupChat
-                  ? navigation.navigate("")
+                  ? navigation.navigate("ChatSettings", { chatId })
                   : navigation.navigate("Contact", {
                       uid: chatData.users.find(
                         (uid) => uid !== userData?.userId

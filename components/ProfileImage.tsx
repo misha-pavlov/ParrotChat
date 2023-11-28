@@ -8,11 +8,13 @@ import { launchImagePicker, uploadImage } from "../utils/imagePickerHelper";
 import { updateUserData } from "../utils/actions/authActions";
 import { useAppDispatch } from "../store/store";
 import { updateUserDataRedux } from "../store/authSlice";
+import { updateChatData } from "../utils/actions/chatActions";
 
 type ProfileImagePropsTypes = {
-  userId: string;
-  userInitials?: string;
   size: ThemeComponentSizeType<"Avatar">;
+  userId?: string;
+  chatId?: string;
+  userInitials?: string;
   uri?: string;
   showEditButton?: boolean;
   showRemoveButton?: boolean;
@@ -21,6 +23,7 @@ type ProfileImagePropsTypes = {
 const ProfileImage: FC<ProfileImagePropsTypes> = ({
   userInitials,
   userId,
+  chatId,
   size,
   uri,
   showEditButton = true,
@@ -36,22 +39,30 @@ const ProfileImage: FC<ProfileImagePropsTypes> = ({
       if (!tempUri) return;
 
       setIsLoading(true);
-      const uploadedUri = await uploadImage(tempUri);
+      const uploadedUri = await uploadImage(tempUri, !!chatId);
       setIsLoading(false);
 
       if (!uploadedUri) {
         throw new Error("Could not upload image");
       }
 
-      const newData = { profilePicture: uploadedUri };
-      await updateUserData(userId, newData);
-      dispatch(updateUserDataRedux({ newData }));
+      if (chatId && userId) {
+        await updateChatData(chatId, userId, { chatImage: uploadedUri });
+      } else {
+        const newData = { profilePicture: uploadedUri };
+
+        if (userId) {
+          await updateUserData(userId, newData);
+          dispatch(updateUserDataRedux({ newData }));
+        }
+      }
+
       setImage(uploadedUri);
     } catch (error) {
       console.error(error);
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, chatId]);
 
   return (
     <Pressable

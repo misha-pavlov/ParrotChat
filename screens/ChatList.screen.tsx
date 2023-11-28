@@ -131,7 +131,7 @@ const ChatList: FC<ChatListPropsTypes> = ({ navigation, route }) => {
               userInitials={
                 isGroupChat ? undefined : getUserInitials(otherUser)
               }
-              image={otherUser.profilePicture}
+              image={isGroupChat ? item?.chatImage : otherUser.profilePicture}
               onPress={() => navigation.navigate("Chat", { chatId })}
             />
           );
