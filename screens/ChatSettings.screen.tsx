@@ -171,7 +171,7 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
 
           <Divider h="1px" backgroundColor={colors.lightGrey} mt={2} mb={2} />
 
-          {chatData.users.map((uid, index, array) => {
+          {chatData.users.slice(0, 4).map((uid, index, array) => {
             const currentUser = storredUsers[uid];
             const isMe = uid === userData?.userId;
             return (
@@ -199,6 +199,31 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
               </Fragment>
             );
           })}
+
+          {chatData.users.length > 4 && (
+            <>
+              <Divider
+                h="1px"
+                backgroundColor={colors.lightGrey}
+                mt={2}
+                mb={2}
+              />
+              <DataItem
+                type="link"
+                title="View all"
+                icon="search1"
+                userId=""
+                onPress={() =>
+                  navigation.navigate("DataList", {
+                    title: "Participants",
+                    data: chatData.users,
+                    type: "users",
+                    chatId,
+                  })
+                }
+              />
+            </>
+          )}
         </View>
 
         {hasChanges && (

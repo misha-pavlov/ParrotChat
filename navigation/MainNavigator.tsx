@@ -10,6 +10,7 @@ import {
   ChatList,
   ChatSettings,
   Contact,
+  DataList,
   NewChat,
   Settings,
 } from "../screens";
@@ -83,6 +84,14 @@ const StackNavigator = () => (
         component={Contact}
         options={{
           headerTitle: "Contact info",
+          headerBackTitle: "Back",
+        }}
+      />
+      <Stack.Screen
+        name="DataList"
+        component={DataList}
+        options={{
+          headerTitle: "",
           headerBackTitle: "Back",
         }}
       />

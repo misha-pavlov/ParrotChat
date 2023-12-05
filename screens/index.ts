@@ -6,3 +6,4 @@ export { default as Auth } from "./Auth.screen";
 export { default as StartUp } from "./StartUp.screen";
 export { default as Contact } from "./Contact.screen";
 export { default as NewChat } from "./NewChat.screen";
+export { default as DataList } from "./DataList.screen";
