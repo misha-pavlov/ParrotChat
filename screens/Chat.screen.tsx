@@ -74,7 +74,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const flatListRef = useRef<ReactNativeFlatList>(null);
   // selectors
   const userChats = useSelector((state: RootState) => state.chats.chatsData);
-  const chatData = (chatId && userChats[chatId]) || params?.newChatData;
+  const chatData = (chatId && userChats[chatId]) || params?.newChatData || {};
   const storedUsers = useSelector(
     (state: RootState) => state.users.storedUsers
   );
@@ -98,6 +98,8 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
   const userId = userData?.userId;
 
   const getChatTitleFromName = useMemo(() => {
+    if (!chatData?.users) return;
+
     const otherUserId = chatData.users.find(
       (uid) => uid !== userData?.userId
     ) as string;
@@ -106,11 +108,11 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
     return getUserName(otherUserData);
   }, [userData, storedUsers, chatData]);
 
-  const headerTitle = chatData.chatName ?? getChatTitleFromName;
-
   useEffect(() => {
+    if (!chatData) return;
+
     navigation.setOptions({
-      headerTitle,
+      headerTitle: chatData.chatName ?? getChatTitleFromName,
       headerRight: () => (
         <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
           {chatId && (
@@ -133,7 +135,7 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
     });
 
     setChatUsers(chatData.users);
-  }, [chatData, headerTitle, navigation]);
+  }, [chatData, navigation]);
 
   const onChangeText = useCallback((value: string) => {
     setMessageText(value);

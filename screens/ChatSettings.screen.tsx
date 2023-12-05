@@ -26,7 +26,10 @@ import { DataItem, LoginInput, ProfileImage, ScreenTitle } from "../components";
 import { colors } from "../config/colors";
 import { settingsReducer } from "../utils/reducers/settingsReducer";
 import { validateLength } from "../utils/validation";
-import { updateChatData } from "../utils/actions/chatActions";
+import {
+  removeUserFromChat,
+  updateChatData,
+} from "../utils/actions/chatActions";
 import { getUserName } from "../helpers/userHelpers";
 
 type CustomParamListBase = {
@@ -34,14 +37,14 @@ type CustomParamListBase = {
 };
 
 type ChatSettingsPropsTypes = {
-  navigation: NavigationProp<ParamListBase>;
+  navigation: NavigationProp<ParamListBase> & { popToTop: VoidFunction };
   route: RouteProp<ParamListBase>;
 };
 
 const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
   const chatId = (route?.params as CustomParamListBase).chatId;
   const chatData = useSelector(
-    (state: RootState) => state.chats.chatsData[chatId]
+    (state: RootState) => state.chats.chatsData[chatId] || {}
   );
   const userData = useSelector((state: RootState) => state.auth.userData);
   const storredUsers = useSelector(
@@ -105,6 +108,24 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
     const currentValues = formState.inputValues;
     return currentValues.chatName !== chatData?.chatName;
   }, [formState, chatData]);
+
+  const leaveChat = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      if (userData && chatData) {
+        await removeUserFromChat(userData, userData, chatData);
+      }
+
+      navigation.popToTop();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigation, isLoading]);
+
+  if (!chatData?.users) return null;
 
   return (
     <View px="20px" backgroundColor={colors.white} flex={1}>
@@ -194,6 +215,17 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
           </Button>
         )}
       </ScrollView>
+
+      <Button
+        backgroundColor={colors.red}
+        borderRadius={30}
+        _pressed={{ opacity: 0.5 }}
+        onPress={leaveChat}
+        isLoading={isLoading}
+        mb={10}
+      >
+        Leave chat
+      </Button>
     </View>
   );
 };

@@ -123,6 +123,11 @@ const MainNavigator = () => {
         onValue(chatRef, (chatSnapshot) => {
           chatsFoundCount++;
           const data = chatSnapshot.val();
+
+          if (!data.users.includes(userData?.userId)) {
+            return;
+          }
+
           const key = chatSnapshot.key;
 
           data.users.forEach((uid: string) => {

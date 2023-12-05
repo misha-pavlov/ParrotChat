@@ -166,22 +166,35 @@ export const removeUserFromChat = async (
   chatData: Chat
 ) => {
   const userToRemoveId = userToRemoveData.userId;
+  console.log("🚀 ~ file: chatActions.ts:169 ~ userToRemoveId:", userToRemoveId)
   const newUsers = chatData.users.filter((uid) => uid !== userToRemoveId);
+  console.log("🚀 ~ file: chatActions.ts:171 ~ newUsers:", newUsers)
   await updateChatData(chatData.key, userLoggedInData.userId, {
     users: newUsers,
   });
 
   const userChats = await getUserChats(userToRemoveId);
+  console.log("🚀 ~ file: chatActions.ts:177 ~ userChats:", userChats)
 
   for (const key in userChats) {
+    console.log("🚀 ~ file: chatActions.ts:180 ~ key:", key)
     const currentChatId = userChats[key];
+    console.log("🚀 ~ file: chatActions.ts:181 ~ currentChatId:", currentChatId)
 
     if (currentChatId === chatData.key) {
+      console.log('HERE')
       await deleteUserChat(userToRemoveId, key);
       break;
     }
   }
 
-  const messageText = `${userLoggedInData.firstName} removed ${userToRemoveData.firstName} from the chat`;
+  let messageText = `${userLoggedInData.firstName} removed ${userToRemoveData.firstName} from the chat`;
+
+  if (userLoggedInData.userId === userToRemoveId) {
+    messageText = `${userLoggedInData.firstName} left the chat`;
+  }
+
+  console.log("🚀 ~ file: chatActions.ts:190 ~ messageText:", messageText)
   await sendInfoMessage(chatData.key, userLoggedInData.userId, messageText);
+  console.log('DONE')
 };

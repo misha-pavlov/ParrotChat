@@ -70,6 +70,5 @@ export const deleteUserChat = async (userId: string, key: string) => {
     await remove(chatRef);
   } catch (error) {
     console.error(error);
-    throw error
   }
 };
