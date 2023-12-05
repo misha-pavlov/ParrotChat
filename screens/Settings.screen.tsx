@@ -163,23 +163,17 @@ const Settings = () => {
           errorText={formState.inputValidities[LOGIN_IDS.about]}
         />
 
-        {isLoading ? (
-          <View mt="20px">
-            <ActivityIndicator color={colors.primaryGreen} />
-          </View>
-        ) : (
-          hasChanges && (
-            <Button
-              backgroundColor={colors.primaryGreen}
-              borderRadius={30}
-              _pressed={{ opacity: 0.5 }}
-              mt="20px"
-              isDisabled={!formState.formIsValid}
-              onPress={saveHandler}
-            >
-              Save
-            </Button>
-          )
+        {hasChanges && (
+          <Button
+            backgroundColor={colors.primaryGreen}
+            borderRadius={30}
+            _pressed={{ opacity: 0.5 }}
+            mt="20px"
+            isDisabled={!formState.formIsValid}
+            onPress={saveHandler}
+          >
+            Save
+          </Button>
         )}
 
         <Button

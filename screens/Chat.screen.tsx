@@ -254,9 +254,15 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
               renderItem={({ item }) => {
                 const message = item;
                 const isOwnMessage = message.sendBy === userId;
-                const messageType = isOwnMessage ? "myMessage" : "theirMessage";
+                let messageType: "myMessage" | "theirMessage" | "info" =
+                  isOwnMessage ? "myMessage" : "theirMessage";
                 const sender = message.sendBy && storedUsers[message.sendBy];
                 const name = sender && getUserName(sender);
+
+                if (message?.type) {
+                  messageType = message.type;
+                }
+
                 return (
                   <View
                     mb={

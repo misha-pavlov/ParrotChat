@@ -1,7 +1,7 @@
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import { Button, View } from "native-base";
+import { Button } from "native-base";
 import { useCallback, useEffect, useReducer, useState } from "react";
-import { ActivityIndicator, Alert } from "react-native";
+import { Alert } from "react-native";
 import LoginInput from "./LoginInput";
 import { colors } from "../config/colors";
 import {
@@ -108,22 +108,17 @@ const SignUpForm = () => {
         errorText={formState.inputValidities[IDS.password]}
       />
 
-      {isLoading ? (
-        <View mt="20px">
-          <ActivityIndicator color={colors.primaryGreen} />
-        </View>
-      ) : (
-        <Button
-          backgroundColor={colors.primaryGreen}
-          borderRadius={30}
-          _pressed={{ opacity: 0.5 }}
-          mt="20px"
-          isDisabled={!formState.formIsValid}
-          onPress={authHandler}
-        >
-          Sign up
-        </Button>
-      )}
+      <Button
+        backgroundColor={colors.primaryGreen}
+        borderRadius={30}
+        _pressed={{ opacity: 0.5 }}
+        mt="20px"
+        isDisabled={!formState.formIsValid}
+        onPress={authHandler}
+        isLoading={isLoading}
+      >
+        Sign up
+      </Button>
     </>
   );
 };

@@ -21,7 +21,6 @@ import {
   View,
   useToast,
 } from "native-base";
-import { ActivityIndicator } from "react-native";
 import { RootState } from "../store/store";
 import { DataItem, LoginInput, ProfileImage, ScreenTitle } from "../components";
 import { colors } from "../config/colors";
@@ -164,7 +163,7 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
                   userId={uid}
                   onPress={
                     !isMe
-                      ? () => navigation.navigate("Contact", { uid })
+                      ? () => navigation.navigate("Contact", { uid, chatId })
                       : undefined
                   }
                 />
@@ -181,21 +180,18 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
           })}
         </View>
 
-        {isLoading ? (
-          <ActivityIndicator size="small" color={colors.primaryGreen} />
-        ) : (
-          hasChanges && (
-            <Button
-              backgroundColor={colors.primaryGreen}
-              borderRadius={30}
-              _pressed={{ opacity: 0.5 }}
-              mt="20px"
-              isDisabled={!formState.formIsValid}
-              onPress={saveHandler}
-            >
-              Save
-            </Button>
-          )
+        {hasChanges && (
+          <Button
+            backgroundColor={colors.primaryGreen}
+            borderRadius={30}
+            _pressed={{ opacity: 0.5 }}
+            mt="20px"
+            isDisabled={!formState.formIsValid}
+            onPress={saveHandler}
+            isLoading={isLoading}
+          >
+            Save
+          </Button>
         )}
       </ScrollView>
     </View>

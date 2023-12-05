@@ -13,4 +13,5 @@ export type Chat = {
 
 export type UpdateChatData = {
   chatImage?: string;
-}
+  users?: string[];
+};

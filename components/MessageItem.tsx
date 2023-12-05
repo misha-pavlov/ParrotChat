@@ -18,7 +18,7 @@ import { getUserName } from "../helpers/userHelpers";
 
 type MessageItemPropsType = {
   text: string;
-  type: "myMessage" | "theirMessage" | "reply";
+  type: "myMessage" | "theirMessage" | "reply" | "info";
   setReply?: VoidFunction;
   replyingTo?: Message;
   name?: string;
@@ -58,9 +58,11 @@ const MessageItem: FC<MessageItemPropsType> = ({
 
   const isMyMessage = type === "myMessage";
   const isReply = type === "reply";
-  const isStarred = messageId && starredMessages
-    ? starredMessages[messageId] !== undefined
-    : false;
+  const isInfoMessage = type === "info";
+  const isStarred =
+    messageId && starredMessages
+      ? starredMessages[messageId] !== undefined
+      : false;
   const replyingToUser = replyingTo && storedUsers[replyingTo.sendBy];
 
   const copyToClipboard = useCallback(
@@ -96,20 +98,36 @@ const MessageItem: FC<MessageItemPropsType> = ({
       return colors.grey1;
     }
 
+    if (isInfoMessage) {
+      return colors.white;
+    }
+
     return colors.nearlyWhite;
-  }, [isMyMessage, isReply]);
+  }, [isMyMessage, isReply, isInfoMessage]);
+
+  const alignSelf = useMemo(() => {
+    if (isMyMessage) {
+      return "flex-end";
+    }
+
+    if (isInfoMessage) {
+      return "center";
+    }
+
+    return "flex-start";
+  }, [isMyMessage, isInfoMessage]);
 
   return (
     <Pressable
       backgroundColor={backgroundColor}
       borderRadius={5}
-      alignSelf={isMyMessage ? "flex-end" : "flex-start"}
+      alignSelf={alignSelf}
       p={1}
       _pressed={{ opacity: 0.5 }}
       onLongPress={() => menuRef.current?.open()}
       {...(isReply && { w: "100%" })}
     >
-      {name && (
+      {name && !isInfoMessage && (
         <Text letterSpacing={0.3} fontWeight={600}>
           {name}
         </Text>
@@ -137,7 +155,7 @@ const MessageItem: FC<MessageItemPropsType> = ({
         />
       )}
 
-      {date && (
+      {date && !isInfoMessage && (
         <HStack alignSelf="flex-end" alignItems="center" space={1}>
           {isStarred && (
             <FontAwesome name="star" size={14} color={colors.grey} />

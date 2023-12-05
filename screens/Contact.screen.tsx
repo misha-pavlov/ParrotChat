@@ -1,19 +1,21 @@
-import { View, Text, Center } from "native-base";
+import { View, Text, Center, Button } from "native-base";
 import { useSelector } from "react-redux";
 import {
   NavigationProp,
   ParamListBase,
   RouteProp,
 } from "@react-navigation/native";
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { RootState } from "../store/store";
 import { DataItem, ProfileImage, ScreenTitle } from "../components";
 import { getUserInitials, getUserName } from "../helpers/userHelpers";
 import { colors } from "../config/colors";
 import { getUserChats } from "../utils/actions/userActions";
+import { removeUserFromChat } from "../utils/actions/chatActions";
 
 type CustomParamListBase = {
   uid: string;
+  chatId?: string;
 };
 
 type ContactPropsTypes = {
@@ -24,11 +26,16 @@ type ContactPropsTypes = {
 };
 
 const Contact: FC<ContactPropsTypes> = ({ route, navigation }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const userData = useSelector((state: RootState) => state.auth.userData);
   const storredUsers = useSelector(
     (state: RootState) => state.users.storedUsers
   );
   const storredChats = useSelector((state: RootState) => state.chats.chatsData);
   const currentUser = storredUsers[(route.params as CustomParamListBase).uid];
+  const chatId = (route.params as CustomParamListBase)?.chatId;
+  const chatData = chatId && storredChats[chatId];
+
   const [commonChats, setCommonChats] = useState<string[]>([]);
 
   useEffect(() => {
@@ -45,6 +52,22 @@ const Contact: FC<ContactPropsTypes> = ({ route, navigation }) => {
 
     getCommonUserChats();
   }, []);
+
+  const removeFromChat = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      if (userData && chatData) {
+        await removeUserFromChat(userData, currentUser, chatData);
+      }
+
+      navigation.goBack();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigation, isLoading]);
 
   return (
     <View px="20px">
@@ -100,6 +123,19 @@ const Contact: FC<ContactPropsTypes> = ({ route, navigation }) => {
             );
           })}
         </>
+      )}
+
+      {chatData && chatData?.isGroupChat && (
+        <Button
+          backgroundColor={colors.red}
+          borderRadius={30}
+          _pressed={{ opacity: 0.5 }}
+          mt="20px"
+          onPress={removeFromChat}
+          isLoading={isLoading}
+        >
+          Remove from chat
+        </Button>
       )}
     </View>
   );
