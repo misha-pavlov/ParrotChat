@@ -1,23 +1,50 @@
 import { Button, Center, ScrollView, View, useToast } from "native-base";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import { useCallback, useMemo, useReducer, useState } from "react";
+import { FC, useCallback, useMemo, useReducer } from "react";
 import { useSelector } from "react-redux";
 import { ActivityIndicator } from "react-native";
-import { LoginInput, ProfileImage, ScreenTitle } from "../components";
+import { NavigationProp, ParamListBase } from "@react-navigation/native";
+// componens
+import { DataItem, LoginInput, ProfileImage, ScreenTitle } from "../components";
+// constants
 import { colors } from "../config/colors";
 import { LOGIN_IDS } from "../config/constants";
+// utils
 import { loginValidation } from "../utils/validation";
-import { RootState, useAppDispatch } from "../store/store";
 import { settingsReducer } from "../utils/reducers/settingsReducer";
 import { updateUserData, userLogout } from "../utils/actions/authActions";
+// store
+import { RootState, useAppDispatch } from "../store/store";
 import { updateUserDataRedux } from "../store/authSlice";
+// helpers
 import { getUserInitials } from "../helpers/userHelpers";
+// types
+import { StarredMessages } from "../types/messageTypes";
 
-const Settings = () => {
-  const [isLoading, setIsLoading] = useState(false);
+type SettingsPropsTypes = {
+  navigation: NavigationProp<ParamListBase>;
+};
+
+const Settings: FC<SettingsPropsTypes> = ({ navigation }) => {
   const userData = useSelector((state: RootState) => state.auth.userData);
+  const starredMessages = useSelector(
+    (state: RootState) => state.messages.starredMessages
+  );
   const dispatch = useAppDispatch();
   const toast = useToast();
+
+  const sortedStarredMessages = useMemo(() => {
+    let result: StarredMessages[] = [];
+
+    const chats = Object.values(starredMessages);
+
+    chats.forEach((chat) => {
+      const chatMessages = Object.values(chat);
+      result = result.concat(chatMessages);
+    });
+
+    return result;
+  }, []);
 
   const firstName = userData?.firstName || "";
   const lastName = userData?.lastName || "";
@@ -58,8 +85,6 @@ const Settings = () => {
     const userId = userData?.userId;
 
     try {
-      setIsLoading(true);
-
       if (userId) {
         await updateUserData(userId, updatedValues);
         dispatch(updateUserDataRedux({ newData: updatedValues }));
@@ -69,8 +94,6 @@ const Settings = () => {
       }
     } catch (error) {
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   }, [formState, userData, dispatch]);
 
@@ -162,6 +185,22 @@ const Settings = () => {
           defaultValue={userData.about}
           errorText={formState.inputValidities[LOGIN_IDS.about]}
         />
+
+        <View mt={2}>
+          <DataItem
+            type="link"
+            title="Starred messages"
+            icon="star"
+            userId=""
+            onPress={() =>
+              navigation.navigate("DataList", {
+                title: "Starred messages",
+                data: sortedStarredMessages,
+                type: "messages",
+              })
+            }
+          />
+        </View>
 
         {hasChanges && (
           <Button
