@@ -14,7 +14,7 @@ import { getUserName } from "../helpers/userHelpers";
 type CustomParamListBase = {
   title: string;
   data: any[];
-  type: "users";
+  type: "users" | "messages";
   chatId: string;
 };
 
@@ -30,6 +30,9 @@ const DataList: FC<DataListPropsTypes> = ({ route, navigation }) => {
   const storredUsers = useSelector(
     (state: RootState) => state.users.storedUsers
   );
+  const messagesData = useSelector(
+    (state: RootState) => state.messages.messagesData
+  );
 
   useEffect(() => {
     navigation.setOptions({ headerTitle: title });
@@ -39,7 +42,7 @@ const DataList: FC<DataListPropsTypes> = ({ route, navigation }) => {
     <View px="20px" backgroundColor={colors.white} flex={1}>
       <FlatList
         data={data}
-        keyExtractor={(item) => item}
+        keyExtractor={(item) => item?.messageId || item}
         renderItem={(itemData) => {
           let key, onPress, image, title, subTitle, itemType;
 
@@ -59,6 +62,22 @@ const DataList: FC<DataListPropsTypes> = ({ route, navigation }) => {
             onPress = isLoggedInUser
               ? undefined
               : () => navigation.navigate("Contact", { uid, chatId });
+          } else if (type === "messages") {
+            const starData = itemData.item;
+            const { chatId, messageId } = starData;
+            const messagesForChat = messagesData[chatId];
+
+            if (!messagesForChat) return null;
+
+            const messageData = messagesForChat[messageId];
+            const sender =
+              messageData.sendBy && storredUsers[messageData.sendBy];
+            const name = sender && getUserName(sender);
+
+            key = messageId;
+            title = name;
+            subTitle = messageData.text;
+            itemType = undefined;
           }
 
           return (

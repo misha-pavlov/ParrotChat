@@ -55,6 +55,9 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
   const storredUsers = useSelector(
     (state: RootState) => state.users.storedUsers
   );
+  const starredMessages = useSelector((state: RootState) =>
+    chatId ? state.messages.starredMessages[chatId] || {} : {}
+  );
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -281,6 +284,23 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
             Save
           </Button>
         )}
+
+        <View>
+          <Divider h="1px" backgroundColor={colors.lightGrey} mt={2} mb={2} />
+          <DataItem
+            type="link"
+            title="Starred messages"
+            icon="star"
+            userId=""
+            onPress={() =>
+              navigation.navigate("DataList", {
+                title: "Starred messages",
+                data: Object.values(starredMessages),
+                type: "messages",
+              })
+            }
+          />
+        </View>
       </ScrollView>
 
       <Button
