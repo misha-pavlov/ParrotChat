@@ -7,6 +7,7 @@ import {
   FC,
   Fragment,
   useCallback,
+  useEffect,
   useMemo,
   useReducer,
   useState,
@@ -27,13 +28,16 @@ import { colors } from "../config/colors";
 import { settingsReducer } from "../utils/reducers/settingsReducer";
 import { validateLength } from "../utils/validation";
 import {
+  addUsersToChat,
   removeUserFromChat,
   updateChatData,
 } from "../utils/actions/chatActions";
 import { getUserName } from "../helpers/userHelpers";
+import { User } from "../types/userTypes";
 
 type CustomParamListBase = {
   chatId: string;
+  selectedUsers?: string[];
 };
 
 type ChatSettingsPropsTypes = {
@@ -43,6 +47,7 @@ type ChatSettingsPropsTypes = {
 
 const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
   const chatId = (route?.params as CustomParamListBase).chatId;
+  const selectedUsers = (route?.params as CustomParamListBase).selectedUsers;
   const chatData = useSelector(
     (state: RootState) => state.chats.chatsData[chatId] || {}
   );
@@ -69,6 +74,36 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
     settingsReducer,
     initialState
   );
+
+  useEffect(() => {
+    if (!selectedUsers) return;
+
+    const abortController = new AbortController();
+    const updateChatUsers = async () => {
+      const selectedUsersData: User[] = [];
+
+      selectedUsers.forEach((uid) => {
+        if (uid === userData?.userId) return;
+
+        if (!storredUsers[uid]) {
+          console.log("No user data found");
+          return;
+        }
+
+        selectedUsersData.push(storredUsers[uid]);
+      });
+
+      if (userData) {
+        await addUsersToChat(userData, selectedUsersData, chatData);
+      }
+    };
+
+    updateChatUsers();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [selectedUsers]);
 
   const onChange = useCallback(
     (inputId: string, inputValue: string) => {
@@ -166,6 +201,13 @@ const ChatSettings: FC<ChatSettingsPropsTypes> = ({ route, navigation }) => {
               icon="plus"
               userId={userData?.userId}
               type="button"
+              onPress={() =>
+                navigation.navigate("NewChat", {
+                  existingUsers: chatData.users,
+                  chatId,
+                  isGroupChat: true,
+                })
+              }
             />
           )}
 

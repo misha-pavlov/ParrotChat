@@ -31,6 +31,8 @@ import { setStoredUsers } from "../store/userSlice";
 
 type CustomParamListBase = {
   isGroupChat?: boolean;
+  chatId?: string;
+  existingUsers?: string[];
 };
 
 type NewChatPropsTypes = {
@@ -53,8 +55,11 @@ const NewChat: FC<NewChatPropsTypes> = ({ navigation, route }) => {
   const dispatch = useAppDispatch();
   const selectedUsersFlatListRef = useRef<ReactNativeFlatList>(null);
 
+  const chatId = (route.params as CustomParamListBase)?.chatId;
+  const existingUsers = (route.params as CustomParamListBase)?.existingUsers;
   const isGroupChat = (route.params as CustomParamListBase)?.isGroupChat;
-  const isGroupChatDisabled = chatName === "" || !selectedUsers.length;
+  const isNewChat = !chatId;
+  const isGroupChatDisabled = (isNewChat && chatName === "") || !selectedUsers.length;
 
   useEffect(() => {
     navigation.setOptions({
@@ -71,11 +76,15 @@ const NewChat: FC<NewChatPropsTypes> = ({ navigation, route }) => {
         <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
           {isGroupChat && (
             <Item
-              title="Create"
+              title={isNewChat ? "Create" : "Add"}
               disabled={isGroupChatDisabled}
               color={isGroupChatDisabled ? colors.lightGrey : undefined}
               onPress={() =>
-                navigation.navigate("ChatList", { selectedUsers, chatName })
+                navigation.navigate(isNewChat ? "ChatList" : "ChatSettings", {
+                  selectedUsers,
+                  chatName,
+                  chatId
+                })
               }
             />
           )}
@@ -134,28 +143,31 @@ const NewChat: FC<NewChatPropsTypes> = ({ navigation, route }) => {
     <View mx={4}>
       {isGroupChat && (
         <>
-          <View py={2}>
-            <View w="100%" flexDirection="row" borderRadius={2}>
-              <Input
-                placeholder="Enter a name for your chat"
-                autoCorrect={false}
-                autoComplete={undefined}
-                color={colors.textColor}
-                w="100%"
-                fontFamily="Quicksand-Regular"
-                letterSpacing={0.3}
-                borderColor={colors.extraLightGrey}
-                onChangeText={(text) => setChatName(text)}
-                _focus={{
-                  borderColor: colors.extraLightGrey,
-                  backgroundColor: colors.extraLightGrey,
-                }}
-              />
+          {isNewChat && (
+            <View py={2}>
+              <View w="100%" flexDirection="row" borderRadius={2}>
+                <Input
+                  placeholder="Enter a name for your chat"
+                  autoCorrect={false}
+                  autoComplete={undefined}
+                  color={colors.textColor}
+                  w="100%"
+                  fontFamily="Quicksand-Regular"
+                  letterSpacing={0.3}
+                  borderColor={colors.extraLightGrey}
+                  onChangeText={(text) => setChatName(text)}
+                  _focus={{
+                    borderColor: colors.extraLightGrey,
+                    backgroundColor: colors.extraLightGrey,
+                  }}
+                />
+              </View>
             </View>
-          </View>
+          )}
 
           <View>
             <FlatList
+              mt={isNewChat ? 0 : 2}
               ref={selectedUsersFlatListRef}
               data={selectedUsers}
               horizontal
@@ -225,6 +237,11 @@ const NewChat: FC<NewChatPropsTypes> = ({ navigation, route }) => {
           data={Object.keys(users)}
           renderItem={({ item }) => {
             const userData = users[item] as User;
+
+            if (existingUsers && existingUsers?.includes(item)) {
+              return null;
+            }
+
             return (
               <DataItem
                 title={getUserName(userData)}
