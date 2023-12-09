@@ -2,9 +2,13 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, Platform } from "react-native";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
+import { StackActions, useNavigation } from "@react-navigation/native";
 import {
   Chat,
   ChatList,
@@ -108,8 +112,48 @@ const MainNavigator = () => {
   const storedUsers = useSelector(
     (state: RootState) => state.users.storedUsers
   );
+
+  const navigation = useNavigation();
   const dispatch = useAppDispatch();
+  const notificationListener: React.MutableRefObject<Notifications.Subscription | null> =
+    useRef(null);
+  const responseListener: React.MutableRefObject<Notifications.Subscription | null> =
+    useRef(null);
+  const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then((token) =>
+      setExpoPushToken(token)
+    );
+
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        // Handle recived notification
+      });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const { data } = response.notification.request.content;
+        const chatId: string = data.chatId;
+
+        if (chatId) {
+          const pushAction = StackActions.push("Chat", { chatId });
+          navigation.dispatch(pushAction);
+        } else {
+          console.log("No chat id");
+        }
+      });
+
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current as Notifications.Subscription
+      );
+      Notifications.removeNotificationSubscription(
+        responseListener.current as Notifications.Subscription
+      );
+    };
+  }, []);
 
   useEffect(() => {
     console.log("Subscribe to user chats");
@@ -200,3 +244,41 @@ const MainNavigator = () => {
 };
 
 export default MainNavigator;
+
+async function registerForPushNotificationsAsync() {
+  let token;
+
+  if (Platform.OS === "android") {
+    await Notifications.setNotificationChannelAsync("default", {
+      name: "default",
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: "#FF231F7C",
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") {
+      alert("Failed to get push token for push notification!");
+      return;
+    }
+    if (Constants?.expoConfig?.extra) {
+      token = (
+        await Notifications.getExpoPushTokenAsync({
+          projectId: Constants.expoConfig.extra.eas.projectId,
+        })
+      ).data;
+    }
+  } else {
+    console.log("Must use physical device for Push Notifications");
+  }
+
+  return token;
+}

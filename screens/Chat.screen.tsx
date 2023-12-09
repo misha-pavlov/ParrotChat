@@ -155,7 +155,13 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
       }
 
       if (id && userId) {
-        await sendTextMessage(id, userId, messageText, replyingTo?.key);
+        await sendTextMessage(
+          id,
+          userData,
+          messageText,
+          chatUsers,
+          replyingTo?.key
+        );
       }
       setMessageText(INITIAL_VALUE);
       setReplyingTo(undefined);
@@ -209,7 +215,13 @@ const Chat: FC<ChatPropsTypes> = ({ route, navigation }) => {
       setIsLoading(false);
 
       if (id && userId) {
-        await sendImageMessage(id, userId, uploadUrl, replyingTo?.key);
+        await sendImageMessage(
+          id,
+          userData,
+          uploadUrl,
+          chatUsers,
+          replyingTo?.key
+        );
       }
 
       setReplyingTo(undefined);

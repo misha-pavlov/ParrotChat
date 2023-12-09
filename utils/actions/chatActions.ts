@@ -13,6 +13,8 @@ import { Chat, UpdateChatData } from "../../types/chatTypes";
 import { Message } from "../../types/messageTypes";
 import { User } from "../../types/userTypes";
 import { addUserChat, deleteUserChat, getUserChats } from "./userActions";
+import { getUserPushTokens } from "./authActions";
+import { getUserName } from "../../helpers/userHelpers";
 
 export const createChat = async (
   userId: string,
@@ -41,20 +43,36 @@ export const createChat = async (
 
 export const sendTextMessage = async (
   chatId: string,
-  senderId: string,
+  senderData: User,
   messageText: string,
+  chatUsers: string[],
   replyId?: string
 ) => {
-  await sendMessage(chatId, senderId, messageText, undefined, replyId);
+  await sendMessage(chatId, senderData.userId, messageText, undefined, replyId);
+  const otherUsers = chatUsers.filter((cu) => cu !== senderData.userId);
+  await sendPushNotificationForUsers(
+    otherUsers,
+    getUserName(senderData),
+    messageText,
+    chatId
+  );
 };
 
 export const sendImageMessage = async (
   chatId: string,
-  senderId: string,
+  senderData: User,
   imageUrl: string,
+  chatUsers: string[],
   replyId?: string
 ) => {
-  await sendMessage(chatId, senderId, "Image", imageUrl, replyId);
+  await sendMessage(chatId, senderData.userId, "Image", imageUrl, replyId);
+  const otherUsers = chatUsers.filter((cu) => cu !== senderData.userId);
+  await sendPushNotificationForUsers(
+    otherUsers,
+    getUserName(senderData),
+    `${getUserName(senderData)} sent an image`,
+    chatId
+  );
 };
 
 export const sendInfoMessage = async (
@@ -218,7 +236,30 @@ export const addUsersToChat = async (
     users: existingUsers.concat(newUsers),
   });
 
-  const moreUsersMessage = newUsers.length > 1 ? `and ${newUsers.length - 1} others ` : '';
+  const moreUsersMessage =
+    newUsers.length > 1 ? `and ${newUsers.length - 1} others ` : "";
   const messageText = `${userLoggedInData.firstName} added ${userAddedName} ${moreUsersMessage}to the chat`;
   await sendInfoMessage(chatData.key, userLoggedInData.userId, messageText);
+};
+
+const sendPushNotificationForUsers = (
+  chatUsers: string[],
+  title: string,
+  body: string,
+  chatId: string
+) => {
+  chatUsers.forEach(async (uid) => {
+    const tokens = await getUserPushTokens(uid);
+
+    for (const key in tokens) {
+      const token = tokens[key];
+      await fetch("https://exp.host/--/api/v2/push/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ to: token, title, body, data: { chatId } }),
+      });
+    }
+  });
 };

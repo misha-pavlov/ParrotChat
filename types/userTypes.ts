@@ -3,8 +3,9 @@ export type User = {
   lastName: string;
   firstLast: string;
   email: string;
-  about: string;
   userId: string;
   signUpDate: string;
+  about?: string;
   profilePicture?: string;
+  pushTokens?: Record<string, string>
 };

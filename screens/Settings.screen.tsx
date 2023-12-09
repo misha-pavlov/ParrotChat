@@ -220,7 +220,7 @@ const Settings: FC<SettingsPropsTypes> = ({ navigation }) => {
           borderRadius={30}
           _pressed={{ opacity: 0.5 }}
           mt="20px"
-          onPress={() => dispatch(userLogout())}
+          onPress={() => dispatch(userLogout(userData))}
         >
           Logout
         </Button>

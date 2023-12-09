@@ -3,8 +3,19 @@ import {
   getAuth,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { child, getDatabase, ref, set, update } from "firebase/database";
+import {
+  child,
+  get,
+  getDatabase,
+  push,
+  ref,
+  set,
+  update,
+} from "firebase/database";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Device from "expo-device";
+import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
 import { LOGIN_IDS, ASYNC_STORAGE_KEYS } from "../../config/constants";
 import { getFirebaseApp } from "../firebaseHelper";
 import { authenticate, logout } from "../../store/authSlice";
@@ -43,9 +54,10 @@ export const signUp = (params: typeof LOGIN_IDS) => {
 
       dispatch(authenticate({ token: accessToken, userData }));
       saveDataToStorage(accessToken, uid, expiryDate);
+      await storePushToken(userData);
 
       timer = setTimeout(() => {
-        dispatch(userLogout());
+        dispatch(userLogout(userData));
       }, millisecondsUntilExpiry);
     } catch (error) {
       const errorCode = (error as { code: string }).code;
@@ -81,9 +93,10 @@ export const signIn = (
 
       dispatch(authenticate({ token: accessToken, userData }));
       saveDataToStorage(accessToken, uid, expiryDate);
+      await storePushToken(userData);
 
       timer = setTimeout(() => {
-        dispatch(userLogout());
+        dispatch(userLogout(userData));
       }, millisecondsUntilExpiry);
     } catch (error) {
       const errorCode = (error as { code: string }).code;
@@ -98,18 +111,20 @@ export const signIn = (
   };
 };
 
-export const userLogout = () => {
+export const userLogout = (userData: User) => {
   return async (dispatch: AppDispatch) => {
+    try {
+      await removePushToken(userData);
+    } catch (error) {
+      console.error(error);
+    }
     AsyncStorage.clear();
     clearTimeout(timer);
     dispatch(logout());
   };
 };
 
-export const updateUserData = async (
-  userId: string,
-  newData: { [x: string]: string }
-) => {
+export const updateUserData = async (userId: string, newData: any) => {
   if (newData.firstName && newData.lastName) {
     const firstLast = getUserName(newData as User).toLowerCase();
     newData.firstLast = firstLast;
@@ -155,3 +170,83 @@ const saveDataToStorage = (token: string, userId: string, expiryDate: Date) =>
       expiryDate,
     })
   );
+
+const storePushToken = async (userData: User) => {
+  if (!Device.isDevice) return;
+
+  if (Constants?.expoConfig?.extra) {
+    const token = (
+      await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig.extra.eas.projectId,
+      })
+    ).data;
+
+    const tokenData = { ...userData.pushTokens } || {};
+    const tokenArray = Object.values(tokenData);
+
+    if (tokenArray.includes(token)) return;
+
+    tokenArray.push(token);
+
+    for (let i = 0; i < tokenArray.length; i++) {
+      const tok = tokenArray[i];
+      tokenData[i] = tok;
+    }
+
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const userRef = child(dbRef, `users/${userData.userId}/pushTokens`);
+
+    try {
+      await set(userRef, tokenData);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+};
+
+const removePushToken = async (userData: User) => {
+  if (!Device.isDevice) return;
+
+  if (Constants?.expoConfig?.extra) {
+    const token = (
+      await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig.extra.eas.projectId,
+      })
+    ).data;
+
+    const tokenData = await getUserPushTokens(userData.userId);
+
+    for (const key in tokenData) {
+      if (tokenData[key] === token) {
+        delete tokenData[key];
+        break;
+      }
+    }
+
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const userRef = child(dbRef, `users/${userData.userId}/pushTokens`);
+
+    try {
+      await set(userRef, tokenData);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+};
+
+export const getUserPushTokens = async (userId: string) => {
+  try {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const userRef = child(dbRef, `users/${userId}/pushTokens`);
+    const snapshot = await get(userRef);
+
+    if (!snapshot || !snapshot.exists) return {};
+
+    return snapshot.val() || {};
+  } catch (error) {
+    console.error(error);
+  }
+};
